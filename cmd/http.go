@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
-	"github.com/santhanuv/srotas/client"
+	"github.com/santhanuv/srotas/internal/client"
 	"github.com/spf13/cobra"
 )
 
@@ -22,11 +24,16 @@ var httpCommand = cobra.Command{
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		method, rawURL := args[0], args[1]
+		method = strings.ToUpper(method)
+		c := client.NewClient()
+		req := client.NewRequest(method, rawURL, nil)
 
-		client := client.NewApiClient(method, rawURL)
+		res, err := c.Do(*req)
 
-		client.Do()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+		}
 
-		fmt.Println(client.Response)
+		fmt.Println(*res)
 	},
 }
