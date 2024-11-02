@@ -27,5 +27,11 @@ func (c *Client) Do(req Request) (*Response, error) {
 		return nil, err
 	}
 
-	return FromHttpResponse(httpResponse), nil
+	response, err := ParseHttpResponse(httpResponse)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
