@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -34,6 +35,12 @@ var httpCommand = cobra.Command{
 			fmt.Fprintf(os.Stderr, "%s", err)
 		}
 
-		fmt.Println(*res)
+		responseJson, err := json.Marshal(*res)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+		}
+
+		fmt.Println(string(responseJson))
 	},
 }

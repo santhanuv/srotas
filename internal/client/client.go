@@ -27,5 +27,5 @@ func (c *Client) Do(req Request) (*Response, error) {
 		return nil, err
 	}
 
-	return (*Response)(httpResponse), nil
+	return FromHttpResponse(httpResponse), nil
 }
