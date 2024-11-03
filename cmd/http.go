@@ -12,6 +12,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(&httpCommand)
+	httpCommand.Flags().StringSliceP("query", "q", []string{}, "Specify query parameters seperated by comma if any")
 }
 
 var httpCommand = cobra.Command{
@@ -26,8 +27,22 @@ var httpCommand = cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		method, rawURL := args[0], args[1]
 		method = strings.ToUpper(method)
+
+		rawQueryParams, err := cmd.Flags().GetStringSlice("query")
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+		}
+
+		queryParams, err := ParseQueryParams(rawQueryParams)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+		}
+
 		c := client.NewClient()
 		req := client.NewRequest(method, rawURL, nil)
+		req.SetQueryParams(queryParams)
 
 		res, err := c.Do(*req)
 
@@ -43,4 +58,21 @@ var httpCommand = cobra.Command{
 
 		fmt.Println(string(responseJson))
 	},
+}
+
+func ParseQueryParams(rawQueryParams []string) (map[string][]string, error) {
+	queryParams := make(map[string][]string)
+
+	for _, rqp := range rawQueryParams {
+		pairs := strings.Split(rqp, "=")
+
+		if len(pairs) < 2 {
+			return nil, fmt.Errorf("Invalid query parameter: %s", rqp)
+		}
+
+		key, value := pairs[0], pairs[1]
+		queryParams[key] = append(queryParams[key], value)
+	}
+
+	return queryParams, nil
 }
