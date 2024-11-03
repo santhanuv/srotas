@@ -14,6 +14,7 @@ func init() {
 	rootCmd.AddCommand(&httpCommand)
 	httpCommand.Flags().StringSliceP("query", "q", []string{}, "Specify query parameters seperated by comma if any")
 	httpCommand.Flags().StringSliceP("headers", "H", []string{}, "Specify headers seperated by comma if any")
+	httpCommand.Flags().StringP("body", "B", "", "Optionally specify the data to be send with request as the request body. When specifying body Content-Type header should be set, otherwise it is send as text/plain. Currently only json is supported")
 }
 
 var httpCommand = cobra.Command{
@@ -57,10 +58,18 @@ var httpCommand = cobra.Command{
 			os.Exit(1)
 		}
 
+		rawRequestBody, err := cmd.Flags().GetString("body")
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
+		}
+
 		c := client.NewClient()
 		req := client.NewRequest(method, rawURL, nil)
 		req.SetQueryParams(queryParams)
 		req.SetHeaders(headers)
+		req.Body = []byte(rawRequestBody)
 
 		res, err := c.Do(*req)
 
