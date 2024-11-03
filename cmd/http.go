@@ -13,6 +13,7 @@ import (
 func init() {
 	rootCmd.AddCommand(&httpCommand)
 	httpCommand.Flags().StringSliceP("query", "q", []string{}, "Specify query parameters seperated by comma if any")
+	httpCommand.Flags().StringSliceP("headers", "H", []string{}, "Specify headers seperated by comma if any")
 }
 
 var httpCommand = cobra.Command{
@@ -32,38 +33,58 @@ var httpCommand = cobra.Command{
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
 		}
 
-		queryParams, err := ParseQueryParams(rawQueryParams)
+		queryParams, err := parseQueryParams(rawQueryParams)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
+		}
+
+		rawHeaders, err := cmd.Flags().GetStringSlice("headers")
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
+		}
+
+		headers, err := parseHeaders(rawHeaders)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
 		}
 
 		c := client.NewClient()
 		req := client.NewRequest(method, rawURL, nil)
 		req.SetQueryParams(queryParams)
+		req.SetHeaders(headers)
 
 		res, err := c.Do(*req)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
 		}
 
 		responseJson, err := json.Marshal(*res)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err)
+			os.Exit(1)
 		}
 
 		fmt.Println(string(responseJson))
 	},
 }
 
-func ParseQueryParams(rawQueryParams []string) (map[string][]string, error) {
+func parseQueryParams(rawQueryParams []string) (map[string][]string, error) {
 	queryParams := make(map[string][]string)
 
 	for _, rqp := range rawQueryParams {
+		rqp = strings.TrimSpace(rqp)
 		pairs := strings.Split(rqp, "=")
 
 		if len(pairs) < 2 {
@@ -75,4 +96,22 @@ func ParseQueryParams(rawQueryParams []string) (map[string][]string, error) {
 	}
 
 	return queryParams, nil
+}
+
+func parseHeaders(rawHeaders []string) (map[string][]string, error) {
+	headers := make(map[string][]string)
+
+	for _, rh := range rawHeaders {
+		rh = strings.TrimSpace(rh)
+		pairs := strings.Split(rh, ":")
+
+		if len(pairs) < 2 {
+			return nil, fmt.Errorf("Invalid header: %s", rh)
+		}
+
+		key, value := pairs[0], pairs[1]
+		headers[key] = append(headers[key], value)
+	}
+
+	return headers, nil
 }

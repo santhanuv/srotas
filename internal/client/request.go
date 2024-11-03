@@ -44,3 +44,11 @@ func (r *Request) SetQueryParams(queryParams map[string][]string) {
 		}
 	}
 }
+
+func (r *Request) SetHeaders(headers map[string][]string) {
+	for key, values := range headers {
+		for _, value := range values {
+			r.Header.Add(key, value)
+		}
+	}
+}
