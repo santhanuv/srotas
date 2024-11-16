@@ -3,10 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
-	"github.com/santhanuv/srotas/internal/client"
+	"github.com/santhanuv/srotas/internal/http"
 	"github.com/spf13/cobra"
 )
 
@@ -33,45 +34,43 @@ var httpCommand = cobra.Command{
 		rawQueryParams, err := cmd.Flags().GetStringSlice("query")
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("query param: %w", err)
 		}
 
 		queryParams, err := parseQueryParams(rawQueryParams)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("query param: %w", err)
 		}
 
 		rawHeaders, err := cmd.Flags().GetStringSlice("headers")
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("header: %w", err)
 		}
 
 		headers, err := parseHeaders(rawHeaders)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("header: %w", err)
 		}
 
 		rawRequestBody, err := cmd.Flags().GetString("body")
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("body: %w", err)
 		}
 
-		c := client.NewClient()
-		req := client.NewRequest(method, rawURL, nil)
-		req.SetQueryParams(queryParams)
-		req.SetHeaders(headers)
-		req.Body = []byte(rawRequestBody)
+		c := http.NewClient()
+		req := &http.Request{
+			Method:      method,
+			Url:         rawURL,
+			Headers:     headers,
+			QueryParams: queryParams,
+			Body:        []byte(rawRequestBody),
+		}
 
-		res, err := c.Do(*req)
+		res, err := c.Do(req)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err)
