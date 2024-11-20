@@ -1,6 +1,14 @@
 package step
 
-import "github.com/santhanuv/srotas/config/step/validation"
+import (
+	"log"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/santhanuv/srotas/config/step/validation"
+	"github.com/santhanuv/srotas/contract"
+)
 
 type RequestBody struct {
 	file string
@@ -21,7 +29,26 @@ type RequestStep struct {
 	Timeout     uint
 }
 
-func (r *RequestStep) Execute() error {
+func (r *RequestStep) Execute(context contract.ExecutionContext) error {
+	req, err := http.NewRequest(r.Method, r.Url, nil)
+
+	if err != nil {
+		return err
+	}
+
+	addToHeader(r.Headers, req.Header)
+
+	urlValues := url.Values{}
+	addToUrl(r.QueryParams, urlValues)
+
+	res, err := context.HttpClient().Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Response: %v", res)
+
 	return nil
 }
 
@@ -139,4 +166,20 @@ func parseRequestBody(body any) (*RequestBody, error) {
 		file: file,
 		data: pd,
 	}, nil
+}
+
+func addToHeader(headers map[string]string, httpHeader http.Header) {
+	for key, csv := range headers {
+		for _, value := range strings.Split(csv, ",") {
+			httpHeader.Add(key, value)
+		}
+	}
+}
+
+func addToUrl(queryParams map[string]string, urlValues url.Values) {
+	for key, csv := range queryParams {
+		for _, value := range strings.Split(csv, ",") {
+			urlValues.Add(key, value)
+		}
+	}
 }

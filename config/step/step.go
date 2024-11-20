@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/santhanuv/srotas/contract"
 	"gopkg.in/yaml.v3"
 )
 
-type Step interface {
-	Execute() error
-}
-
-type StepList []Step
+type StepList []contract.Step
 
 func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 	var rawSteps []map[string]any
@@ -37,7 +34,6 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 				return err
 			}
 
-			fmt.Printf("%#v\n\n", step.Variables)
 			steps = append(steps, step)
 		}
 	}

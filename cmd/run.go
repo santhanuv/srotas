@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"path/filepath"
 
+	"github.com/santhanuv/srotas/internal/executor"
 	"github.com/santhanuv/srotas/internal/parser"
 	"github.com/spf13/cobra"
 )
@@ -37,6 +37,8 @@ var runCommand = cobra.Command{
 			log.Fatalf("Parse error: %v", err)
 		}
 
-		fmt.Printf("%#v\n", flowDef)
+		err = executor.Execute(flowDef)
+
+		log.Fatal(err)
 	},
 }
