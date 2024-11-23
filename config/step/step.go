@@ -2,8 +2,8 @@ package step
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/santhanuv/srotas/config/step/http"
 	"github.com/santhanuv/srotas/contract"
 	"gopkg.in/yaml.v3"
 )
@@ -11,7 +11,10 @@ import (
 type StepList []contract.Step
 
 func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
-	var rawSteps []map[string]any
+	var rawSteps []struct {
+		Type string
+		Step rawStepNode
+	}
 
 	if err := value.Decode(&rawSteps); err != nil {
 		return err
@@ -19,33 +22,30 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 
 	steps := make(StepList, 0, len(rawSteps))
 	for _, rawStep := range rawSteps {
-		var stepType string
-
-		if st, ok := rawStep["type"].(string); !ok {
-			return NewInvalidValueType("type", "string")
-		} else {
-			stepType = strings.ToLower(st)
-		}
-
-		if stepType == "request" {
-			step, err := parseRequestStep(rawStep)
-
-			if err != nil {
-				return err
+		switch rawStep.Type {
+		case "http":
+			hs := &http.Request{
+				Type: rawStep.Type,
 			}
-
-			steps = append(steps, step)
+			rawStep.Step.Decode(hs)
+			steps = append(steps, hs)
+		default:
+			return fmt.Errorf("unsupported type %s for step", rawStep.Type)
 		}
 	}
 
 	*s = steps
+
 	return nil
 }
 
-func NewInvalidValueType(field, expectedType string) error {
-	return fmt.Errorf("invalid type for field %s: expected a type of %s", field, expectedType)
+// rawStepNode allows to delay the parsing of actual step.
+type rawStepNode struct {
+	*yaml.Node
+	Type string
 }
 
-func NewMissingRequiredField(field string) error {
-	return fmt.Errorf("required field %s is missing", field)
+func (r *rawStepNode) UnmarshalYAML(value *yaml.Node) error {
+	r.Node = value
+	return nil
 }
