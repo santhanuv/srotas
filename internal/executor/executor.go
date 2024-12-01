@@ -4,14 +4,21 @@ import (
 	"net/http"
 
 	"github.com/santhanuv/srotas/config"
+	"github.com/santhanuv/srotas/contract"
+	"github.com/santhanuv/srotas/internal/store"
 )
 
 type ExecutionContext struct {
 	httpClient *http.Client
+	localStore *store.Store
 }
 
 func (e *ExecutionContext) HttpClient() *http.Client {
 	return e.httpClient
+}
+
+func (e *ExecutionContext) Store() contract.Store {
+	return e.localStore
 }
 
 func Execute(definition *config.Definition) error {
@@ -19,9 +26,14 @@ func Execute(definition *config.Definition) error {
 
 	context := &ExecutionContext{
 		httpClient: http.DefaultClient,
+		localStore: store.NewStore(nil),
 	}
 	for _, step := range steps {
-		step.Execute(context)
+		err := step.Execute(context)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

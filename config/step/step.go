@@ -2,6 +2,7 @@ package step
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/santhanuv/srotas/config/step/http"
 	"github.com/santhanuv/srotas/contract"
@@ -21,21 +22,29 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	steps := make(StepList, 0, len(rawSteps))
+	var errors []string
 	for _, rawStep := range rawSteps {
 		switch rawStep.Type {
 		case "http":
 			hs := &http.Request{
 				Type: rawStep.Type,
 			}
-			rawStep.Step.Decode(hs)
+			if err := rawStep.Step.Decode(hs); err != nil {
+				errors = append(errors, err.Error())
+				continue
+			}
 			steps = append(steps, hs)
 		default:
 			return fmt.Errorf("unsupported type %s for step", rawStep.Type)
 		}
 	}
 
-	*s = steps
+	if len(errors) > 0 {
+		err := strings.Join(errors, "\n ")
+		return fmt.Errorf("Steps:\n %s", err)
+	}
 
+	*s = steps
 	return nil
 }
 

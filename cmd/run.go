@@ -39,6 +39,8 @@ var runCommand = cobra.Command{
 
 		err = executor.Execute(flowDef)
 
-		log.Fatal(err)
+		if err != nil {
+			log.Fatalf("Execution error: %v", err)
+		}
 	},
 }
