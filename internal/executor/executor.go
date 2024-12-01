@@ -11,6 +11,7 @@ import (
 type ExecutionContext struct {
 	httpClient *http.Client
 	localStore *store.Store
+	baseUrl    string
 }
 
 func (e *ExecutionContext) HttpClient() *http.Client {
@@ -21,12 +22,17 @@ func (e *ExecutionContext) Store() contract.Store {
 	return e.localStore
 }
 
+func (e *ExecutionContext) BaseUrl() string {
+	return e.baseUrl
+}
+
 func Execute(definition *config.Definition) error {
 	steps := definition.Sequence.Steps
 
 	context := &ExecutionContext{
 		httpClient: http.DefaultClient,
 		localStore: store.NewStore(nil),
+		baseUrl:    definition.BaseUrl,
 	}
 	for _, step := range steps {
 		err := step.Execute(context)

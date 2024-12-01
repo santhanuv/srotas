@@ -1,10 +1,12 @@
 package http
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/santhanuv/srotas/contract"
 )
@@ -32,7 +34,8 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 		}
 	}
 
-	req, err := http.NewRequest(r.Method, r.Url, body)
+	eURL := r.expandURL(context.BaseUrl())
+	req, err := http.NewRequest(r.Method, eURL, body)
 
 	if err != nil {
 		return err
@@ -70,4 +73,19 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 	storeFromJsonResponse(resBody, r.Store, context)
 
 	return nil
+}
+
+func (r *Request) expandURL(baseUrl string) string {
+	if baseUrl == "" {
+		return r.Url
+	}
+
+	if strings.Contains(r.Url, "://") {
+		return r.Url
+	}
+
+	baseUrl = strings.TrimSuffix(baseUrl, "/")
+	url := strings.TrimPrefix(r.Url, "/")
+
+	return fmt.Sprintf("%s/%s", baseUrl, url)
 }
