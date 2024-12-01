@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/santhanuv/srotas/contract"
 )
@@ -22,6 +23,7 @@ type Request struct {
 	QueryParams QueryParam `yaml:"query_params"`
 	Store       map[string]string
 	Timeout     uint
+	Delay       uint
 }
 
 func (r *Request) Execute(context contract.ExecutionContext) error {
@@ -54,6 +56,12 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 		}
 	}
 	req.URL.RawQuery = urlValues.Encode()
+
+	delayDuration := time.Duration(r.Delay) * time.Millisecond
+	if delayDuration > 0 {
+		log.Printf("Delaying request for %s", delayDuration)
+		time.Sleep(delayDuration)
+	}
 
 	httpRes, err := context.HttpClient().Do(req)
 
