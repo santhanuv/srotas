@@ -23,8 +23,8 @@ type Request struct {
 	QueryParams map[string][]string
 }
 
-// buildHttpRequest builds the native http.Request from the custom Request type.
-func (hr *Request) buildHttpRequest() (*http.Request, error) {
+// buildNative builds the native http.Request from the custom Request type.
+func (hr *Request) buildNative() (*http.Request, error) {
 	var body io.Reader
 
 	if hr.Body != nil {

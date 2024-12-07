@@ -20,7 +20,7 @@ func NewClient() *Client {
 
 // Do sends an http request and returns an http resposne
 func (hc *Client) Do(request *Request) (*Response, error) {
-	req, err := request.buildHttpRequest()
+	req, err := request.buildNative()
 
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (hc *Client) Do(request *Request) (*Response, error) {
 		return nil, err
 	}
 
-	response, err := createResponse(res)
+	response, err := buildFromNative(res)
 
 	if err != nil {
 		return nil, err

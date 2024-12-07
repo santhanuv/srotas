@@ -13,8 +13,8 @@ type Response struct {
 	Body       []byte              // the response body
 }
 
-// createResponse creates a Response instance from the native http.Response instance
-func createResponse(response *http.Response) (*Response, error) {
+// buildFromNative creates a Response instance from the native http.Response instance
+func buildFromNative(response *http.Response) (*Response, error) {
 	defer response.Body.Close()
 
 	responseBody, err := io.ReadAll(response.Body)
