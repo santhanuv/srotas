@@ -1,10 +1,9 @@
 package executor
 
 import (
-	"net/http"
-
 	"github.com/santhanuv/srotas/config"
 	"github.com/santhanuv/srotas/contract"
+	"github.com/santhanuv/srotas/internal/http"
 	"github.com/santhanuv/srotas/internal/store"
 )
 
@@ -30,7 +29,7 @@ func Execute(definition *config.Definition) error {
 	steps := definition.Sequence.Steps
 
 	context := &ExecutionContext{
-		httpClient: http.DefaultClient,
+		httpClient: http.NewClient(),
 		localStore: store.NewStore(nil),
 		baseUrl:    definition.BaseUrl,
 	}

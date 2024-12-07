@@ -2,14 +2,12 @@ package http
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
 	"github.com/santhanuv/srotas/contract"
+	"github.com/santhanuv/srotas/internal/http"
 )
 
 type Request struct {
@@ -18,7 +16,7 @@ type Request struct {
 	Description string
 	Url         string
 	Method      string
-	Body        *RequestBody `yaml:"body"`
+	Body        RequestBody `yaml:"body"`
 	Headers     Header
 	QueryParams QueryParam `yaml:"query_params"`
 	Store       map[string]string
@@ -26,63 +24,57 @@ type Request struct {
 	Delay       uint
 }
 
+// Execute executes the request with the given context.
 func (r *Request) Execute(context contract.ExecutionContext) error {
-	var body io.ReadCloser
-
-	if r.Body != nil {
-		var err error
-		if body, err = r.Body.transform(context); err != nil {
-			return err
-		}
-	}
-
-	eURL := r.expandURL(context.BaseUrl())
-	req, err := http.NewRequest(r.Method, eURL, body)
-
+	req, err := r.build(context)
 	if err != nil {
 		return err
 	}
 
-	for hk, hv := range r.Headers {
-		for _, v := range hv {
-			req.Header.Add(hk, v)
-		}
-	}
-
-	urlValues := url.Values{}
-	for qp, qv := range r.QueryParams {
-		for _, v := range qv {
-			urlValues.Add(qp, v)
-		}
-	}
-	req.URL.RawQuery = urlValues.Encode()
+	log.Printf("Executing '%s' with request: %v\n", r.Name, req)
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
 	if delayDuration > 0 {
-		log.Printf("Delaying request for %s", delayDuration)
+		log.Printf("Delaying request for %s\n", delayDuration)
 		time.Sleep(delayDuration)
 	}
 
-	httpRes, err := context.HttpClient().Do(req)
-
+	res, err := context.HttpClient().Do(req)
 	if err != nil {
 		return err
 	}
 
-	resBody, err := io.ReadAll(httpRes.Body)
-	defer httpRes.Body.Close()
-	if err != nil {
-		return err
-	}
+	log.Printf("Response for '%s': %v\n", r.Name, string(res.Body))
 
-	log.Printf("Response: %v\n", string(resBody))
-
-	// TODO: update for parsing response based on the type, assuming json here
-	storeFromJsonResponse(resBody, r.Store, context)
+	storeFromResponse(res.Body, r.Store, context)
 
 	return nil
 }
 
+// build returns a custom http request after expanding all variables.
+func (r *Request) build(context contract.ExecutionContext) (*http.Request, error) {
+	body, err := r.Body.build(context)
+
+	if err != nil {
+		return nil, err
+	}
+
+	eURL := r.expandURL(context.BaseUrl())
+	headers := r.Headers.expandVariables(context)
+	queryParams := r.QueryParams.expandVariables(context)
+
+	req := http.Request{
+		Method:      r.Method,
+		Url:         eURL,
+		Body:        body,
+		Headers:     headers,
+		QueryParams: queryParams,
+	}
+
+	return &req, nil
+}
+
+// expandURL combines baseUrl with r.Url. If r.Url is the full url, it is returned.
 func (r *Request) expandURL(baseUrl string) string {
 	if baseUrl == "" {
 		return r.Url

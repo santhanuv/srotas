@@ -8,17 +8,17 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func storeFromJsonResponse(body []byte, variableSelectorMap map[string]string, context contract.ExecutionContext) error {
-	if variableSelectorMap == nil {
+func storeFromResponse(body []byte, query map[string]string, context contract.ExecutionContext) error {
+	if query == nil {
 		return nil
 	}
 
-	selectors := make([]string, 0, len(variableSelectorMap))
-	varNames := make([]string, 0, len(variableSelectorMap))
+	selectors := make([]string, 0, len(query))
+	variables := make([]string, 0, len(query))
 
-	for varName, selector := range variableSelectorMap {
+	for variable, selector := range query {
 		selectors = append(selectors, selector)
-		varNames = append(varNames, varName)
+		variables = append(variables, variable)
 	}
 
 	if ok := gjson.Valid(string(body)); !ok {
@@ -33,10 +33,10 @@ func storeFromJsonResponse(body []byte, variableSelectorMap map[string]string, c
 		val := qv.Value()
 
 		if val == nil {
-			log.Printf("Warning: Setting nil value for %s", varNames[idx])
+			log.Printf("Warning: Setting nil value for %s", variables[idx])
 		}
 
-		store.Set(varNames[idx], val)
+		store.Set(variables[idx], val)
 	}
 
 	return nil

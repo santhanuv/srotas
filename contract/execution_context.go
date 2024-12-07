@@ -1,6 +1,6 @@
 package contract
 
-import "net/http"
+import "github.com/santhanuv/srotas/internal/http"
 
 type ExecutionContext interface {
 	HttpClient() *http.Client

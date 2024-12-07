@@ -1,43 +1,34 @@
 package http
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/santhanuv/srotas/contract"
+	"github.com/tidwall/sjson"
 	"gopkg.in/yaml.v3"
 )
 
-type ContentType uint
-
-const (
-	jsonContent ContentType = iota
-	textContent
-)
-
 type RequestBody struct {
-	Type ContentType
-	File []byte
-	Data map[string]string
+	Content []byte
+	Data    map[string]string
 }
 
-func (r *RequestBody) UnmarshalYAML(value *yaml.Node) error {
+func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 	var rawRequestBody struct {
 		File string
 		Data map[string]string
-		Type string
 	}
 
 	if err := value.Decode(&rawRequestBody); err != nil {
 		return err
 	}
 
-	var content []byte
+	*rb = RequestBody{
+		Data: rawRequestBody.Data,
+	}
+
 	if rawRequestBody.File != "" {
 		file, err := os.Open(rawRequestBody.File)
 		defer file.Close()
@@ -46,93 +37,41 @@ func (r *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 			return err
 		}
 
-		content, err = io.ReadAll(file)
+		content, err := io.ReadAll(file)
 
 		if err != nil {
 			return err
 		}
 
-		r.File = content
-	}
-
-	ct, err := parseContentType(rawRequestBody.Type)
-
-	if err != nil {
-		return nil
-	}
-
-	*r = RequestBody{
-		Type: ct,
-		File: content,
-		Data: rawRequestBody.Data,
+		rb.Content = content
 	}
 
 	return nil
 }
 
-func parseContentType(contentType string) (ContentType, error) {
-	switch contentType {
-	case "json":
-		return jsonContent, nil
-	case "":
-		return textContent, nil
-	default:
-		return textContent, fmt.Errorf("%s not supported", contentType)
-	}
-}
+// build merges rb.Data with rb.Content and returns the result.
+func (rb *RequestBody) build(context contract.ExecutionContext) ([]byte, error) {
+	store := context.Store()
 
-func (rb *RequestBody) transform(context contract.ExecutionContext) (io.ReadCloser, error) {
-	switch rb.Type {
-	case jsonContent:
-		fileReader, err := rb.transformAsJson(context)
+	var (
+		updatedContent []byte
+		err            error
+	)
+
+	for field, variable := range rb.Data {
+		value, ok := store.Get(variable)
+
+		if !ok {
+			log.Printf("varable:'%s' not found in store\n", variable)
+			continue
+		}
+
+		updatedContent, err = sjson.SetBytes(rb.Content, field, value)
+
 		if err != nil {
 			return nil, err
 		}
-		return fileReader, nil
-	case textContent:
-		return nil, nil
-	default:
-		err := fmt.Errorf("Content type not supported")
-		return nil, err
-	}
-}
-
-func (rb *RequestBody) transformAsJson(context contract.ExecutionContext) (io.ReadCloser, error) {
-	var fileData map[string]any
-	if rb.File != nil {
-		if err := json.Unmarshal(rb.File, &fileData); err != nil {
-			return nil, err
-		}
 	}
 
-	store := context.Store()
-	if rb.Data != nil {
-		for field, rawValue := range rb.Data {
-			var value any = rawValue
-
-			if strings.HasPrefix(rawValue, "$") {
-				var ok bool
-
-				variable := rawValue[1:]
-				value, ok = store.Get(variable)
-
-				if !ok {
-					log.Printf("%s not found in store\n", variable)
-					continue
-				}
-			}
-
-			fileData[field] = value
-		}
-	}
-
-	dataBytes, err := json.Marshal(fileData)
-
-	if err != nil {
-		return nil, err
-	}
-
-	reader := bytes.NewReader(dataBytes)
-	return io.NopCloser(reader), nil
-
+	return updatedContent, nil
 }
