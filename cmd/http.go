@@ -61,7 +61,7 @@ var httpCommand = cobra.Command{
 			log.Fatalf("body: %w", err)
 		}
 
-		c := http.NewClient()
+		c := http.NewClient(0)
 		req := &http.Request{
 			Method:      method,
 			Url:         rawURL,

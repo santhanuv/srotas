@@ -8,30 +8,22 @@ import (
 )
 
 type ExecutionContext struct {
-	httpClient *http.Client
-	localStore *store.Store
-	baseUrl    string
-}
-
-func (e *ExecutionContext) HttpClient() *http.Client {
-	return e.httpClient
-}
-
-func (e *ExecutionContext) Store() contract.Store {
-	return e.localStore
-}
-
-func (e *ExecutionContext) BaseUrl() string {
-	return e.baseUrl
+	httpClient    *http.Client
+	localStore    *store.Store
+	globalOptions *contract.Options
 }
 
 func Execute(definition *config.Definition) error {
 	steps := definition.Sequence.Steps
+	gopts := contract.Options{
+		BaseUrl: definition.BaseUrl,
+		Headers: definition.Headers,
+	}
 
 	context := &ExecutionContext{
-		httpClient: http.NewClient(),
-		localStore: store.NewStore(nil),
-		baseUrl:    definition.BaseUrl,
+		httpClient:    http.NewClient(definition.Timeout),
+		localStore:    store.NewStore(nil),
+		globalOptions: &gopts,
 	}
 	for _, step := range steps {
 		err := step.Execute(context)
@@ -42,4 +34,16 @@ func Execute(definition *config.Definition) error {
 	}
 
 	return nil
+}
+
+func (e *ExecutionContext) HttpClient() *http.Client {
+	return e.httpClient
+}
+
+func (e *ExecutionContext) Store() contract.Store {
+	return e.localStore
+}
+
+func (e *ExecutionContext) GlobalOptions() *contract.Options {
+	return e.globalOptions
 }

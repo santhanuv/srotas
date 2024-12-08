@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"time"
 )
 
 // Client represents an http client
@@ -10,9 +11,12 @@ type Client struct {
 	httpClient http.Client // the underlying http client
 }
 
-// NewClient returns a new http client
-func NewClient() *Client {
-	c := http.Client{}
+// NewClient returns a new http client with the specified timeout in milliseconds
+func NewClient(timeout uint) *Client {
+	timeoutMS := time.Duration.Milliseconds(time.Duration(timeout))
+	c := http.Client{
+		Timeout: time.Duration(timeoutMS),
+	}
 	return &Client{
 		httpClient: c,
 	}

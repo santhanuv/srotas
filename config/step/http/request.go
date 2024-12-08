@@ -59,8 +59,10 @@ func (r *Request) build(context contract.ExecutionContext) (*http.Request, error
 		return nil, err
 	}
 
-	eURL := r.expandURL(context.BaseUrl())
-	headers := r.Headers.expandVariables(context)
+	gopts := context.GlobalOptions()
+
+	eURL := r.expandURL(gopts.BaseUrl)
+	headers := r.Headers.build(context)
 	queryParams := r.QueryParams.expandVariables(context)
 
 	req := http.Request{

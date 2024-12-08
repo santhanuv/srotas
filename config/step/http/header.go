@@ -30,10 +30,11 @@ func (h *Header) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-// expandVariables replaces the variable reference with the actual value from the context store.
-func (h *Header) expandVariables(context contract.ExecutionContext) map[string][]string {
-	expandedHeader := make(map[string][]string, len(*h))
+// build replaces the variable reference with the actual value from the context and also appends the global headers if any.
+func (h *Header) build(context contract.ExecutionContext) map[string][]string {
+	gHeaders := context.GlobalOptions().Headers
 	store := context.Store()
+	expandedHeader := make(map[string][]string, len(*h)+len(gHeaders))
 
 	for key, values := range *h {
 		expandedValues := make([]string, 0, len(values))
@@ -61,6 +62,12 @@ func (h *Header) expandVariables(context contract.ExecutionContext) map[string][
 		}
 
 		expandedHeader[key] = expandedValues
+	}
+
+	for key, values := range gHeaders {
+		for _, val := range values {
+			expandedHeader[key] = append(expandedHeader[key], val)
+		}
 	}
 
 	return expandedHeader
