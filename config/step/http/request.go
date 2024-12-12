@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/santhanuv/srotas/config/step/http/validation"
 	"github.com/santhanuv/srotas/contract"
 	"github.com/santhanuv/srotas/internal/http"
 )
@@ -22,6 +23,7 @@ type Request struct {
 	Store       map[string]string
 	Timeout     uint
 	Delay       uint
+	Validations validation.Validator
 }
 
 // Execute executes the request with the given context.
@@ -47,6 +49,12 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 	log.Printf("Response for '%s': %v\n", r.Name, string(res.Body))
 
 	storeFromResponse(res.Body, r.Store, context)
+
+	err = r.Validations.Validate(context, res)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
