@@ -1,5 +1,5 @@
 # srotas
-A simple CLI for testing API.
+A developer toolkit designed to streamline API endpoint testing by automating prerequisite steps. Instead of manually executing a series of API calls to reach your testing target, define your setup sequence in YAML. Srotas handles the API chain execution, managing data flow between requests, allowing you to focus on testing your newly implemented features. Perfect for developers who need efficient manual testing workflows without the overhead of full test automation.
 
 ## Features
 - [x] Send HTTP requests: GET, POST, PUT, DELETE, etc.
@@ -10,7 +10,7 @@ A simple CLI for testing API.
 - [ ] Retry and error handling: Define retry and error handling mechanisms.
 - [ ] Control Structures: Define conditional, different loops.
 - [ ] WebSocket: Add support for web socket.
-- [ ] Config Generation: Generate config file with interactive mode.
+- [ ] Config Generation: Generate a config file in interactive mode.
 
 ## YAML configuration
 ```yaml
