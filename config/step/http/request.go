@@ -33,7 +33,7 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 		return err
 	}
 
-	log.Printf("Executing '%s' with request: %v\n", r.Name, req)
+	log.Printf("Sending http request '%s': %s %s\n", r.Name, req.Method, req.Url)
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
 	if delayDuration > 0 {
@@ -46,7 +46,7 @@ func (r *Request) Execute(context contract.ExecutionContext) error {
 		return err
 	}
 
-	log.Printf("Response for '%s': %v\n", r.Name, string(res.Body))
+	log.Printf("Http request '%s' responded with status %d", r.Name, res.StatusCode)
 
 	storeFromResponse(res.Body, r.Store, context)
 

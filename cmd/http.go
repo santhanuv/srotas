@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/santhanuv/srotas/internal/http"
@@ -34,31 +33,31 @@ var httpCommand = cobra.Command{
 		rawQueryParams, err := cmd.Flags().GetStringSlice("query")
 
 		if err != nil {
-			log.Fatalf("query param: %w", err)
+			log.Fatalf("query param: %v", err)
 		}
 
 		queryParams, err := parseQueryParams(rawQueryParams)
 
 		if err != nil {
-			log.Fatalf("query param: %w", err)
+			log.Fatalf("query param: %v", err)
 		}
 
 		rawHeaders, err := cmd.Flags().GetStringSlice("headers")
 
 		if err != nil {
-			log.Fatalf("header: %w", err)
+			log.Fatalf("header: %v", err)
 		}
 
 		headers, err := parseHeaders(rawHeaders)
 
 		if err != nil {
-			log.Fatalf("header: %w", err)
+			log.Fatalf("header: %v", err)
 		}
 
 		rawRequestBody, err := cmd.Flags().GetString("body")
 
 		if err != nil {
-			log.Fatalf("body: %w", err)
+			log.Fatalf("body: %v", err)
 		}
 
 		c := http.NewClient(0)
@@ -73,15 +72,13 @@ var httpCommand = cobra.Command{
 		res, err := c.Do(req)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("%s", err)
 		}
 
 		responseJson, err := json.Marshal(*res)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err)
-			os.Exit(1)
+			log.Fatalf("%s", err)
 		}
 
 		fmt.Println(string(responseJson))
