@@ -38,11 +38,18 @@ sequence:
         method: POST
         headers:
           Content-Type: "application/json"
-        url: "/tasks"
+        url: "/:user/tasks" # URL parameters can substitute variable values. The parameter name and variable name should match.
         body:
           file: "request1.json" # location of the request JSON file
           data:
             "name": "user" # Key is the SJSON syntax for modifying request JSON body and value is the variable name
+        validations: # Validate response
+          status_code: 201 # Validate the status code of the response
+          asserts:
+            - value: "Task created successfully"
+              selector: "message" # Checks if the response message matches the expected value
+            - value: "$user"
+              selector: "created_by" # Validates the 'created_by' field matches the 'user' variable (USE GJSON syntax)
 ```
 
 [GJSON](https://github.com/tidwall/gjson) is used to extract data from response JSON. Store property expects the key values to be in GJSON syntax. [SJSON](https://github.com/tidwall/sjson) is used to add or replace JSON request values with variable values from the store. The data property of Body expects the key to be of SJSON syntax.
