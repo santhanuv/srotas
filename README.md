@@ -6,8 +6,7 @@ A developer toolkit designed to streamline API endpoint testing by automating pr
 - [x] Request chaining: Reuse values from previous responses in subsequent requests.
 - [x] Configuration: Define requests using YAML files.
 - [x] Headers and query params: Add custom headers and query params to HTTP requests.
-- [ ] Assertions: Validate response for status, data, and headers.
-- [ ] Retry and error handling: Define retry and error handling mechanisms.
+- [x] Assertions: Validate response for status and response data.
 - [ ] Control Structures: Define conditional, different loops.
 - [ ] WebSocket: Add support for web socket.
 - [ ] Config Generation: Generate a config file in interactive mode.
