@@ -28,8 +28,12 @@ func (a *Assert) Validate(context contract.ExecutionContext, response *http.Resp
 
 	actual := gjson.GetBytes(response.Body, a.Selector).Value()
 
+	if actual == nil {
+		return fmt.Errorf("Assert failed: value not found in response body")
+	}
+
 	if expected != actual {
-		return fmt.Errorf("Assert failed: expected %s but got %s", expected, actual)
+		return fmt.Errorf("Assert failed: expected '%s' but got '%s'", expected, actual)
 	}
 
 	return nil

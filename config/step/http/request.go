@@ -69,7 +69,12 @@ func (r *Request) build(context contract.ExecutionContext) (*http.Request, error
 
 	gopts := context.GlobalOptions()
 
-	eURL := r.expandURL(gopts.BaseUrl)
+	eURL, err := r.buildURL(gopts.BaseUrl, context)
+
+	if err != nil {
+		return nil, err
+	}
+
 	headers := r.Headers.build(context)
 	queryParams := r.QueryParams.expandVariables(context)
 
@@ -84,18 +89,33 @@ func (r *Request) build(context contract.ExecutionContext) (*http.Request, error
 	return &req, nil
 }
 
-// expandURL combines baseUrl with r.Url. If r.Url is the full url, it is returned.
-func (r *Request) expandURL(baseUrl string) string {
+// buildURL combines baseUrl with r.Url and expands any URL parameters. If r.Url is already a fully qualified URL, it is returned as-is, just expanding url parameters.
+func (r *Request) buildURL(baseUrl string, context contract.ExecutionContext) (string, error) {
 	if baseUrl == "" {
-		return r.Url
+		return r.Url, nil
 	}
 
-	if strings.Contains(r.Url, "://") {
-		return r.Url
+	var abURL = ""
+	if !strings.Contains(r.Url, "://") {
+		baseUrl = strings.TrimSuffix(baseUrl, "/")
+		url := strings.TrimPrefix(r.Url, "/")
+
+		abURL = fmt.Sprintf("%s/%s", baseUrl, url)
 	}
 
-	baseUrl = strings.TrimSuffix(baseUrl, "/")
-	url := strings.TrimPrefix(r.Url, "/")
+	store := context.Store()
+	for idx, urlParam := range strings.Split(abURL, "/:") {
+		if idx == 0 {
+			continue
+		}
 
-	return fmt.Sprintf("%s/%s", baseUrl, url)
+		val, ok := store.Get(urlParam)
+		if !ok {
+			return "", fmt.Errorf("Url prameter not found in variable store: '%s'", urlParam)
+		}
+
+		abURL = strings.ReplaceAll(abURL, fmt.Sprintf(":%s", urlParam), fmt.Sprintf("%v", val))
+	}
+
+	return abURL, nil
 }
