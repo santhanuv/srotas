@@ -7,10 +7,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Parser struct {
-	errors []error
-}
-
 func ParseConfig(path string) (*config.Definition, error) {
 	cfg, err := os.ReadFile(path)
 
