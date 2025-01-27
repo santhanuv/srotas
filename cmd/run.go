@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"log"
+	"os"
 	"path/filepath"
 
-	"github.com/santhanuv/srotas/internal/executor"
-	"github.com/santhanuv/srotas/internal/parser"
+	"github.com/santhanuv/srotas/internal/log"
+	"github.com/santhanuv/srotas/workflow"
 	"github.com/spf13/cobra"
 )
 
@@ -20,27 +20,36 @@ var runCommand = cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		configPath := args[0]
+		logger := log.New(os.Stderr, os.Stderr, os.Stderr)
 
 		if configPath == "" {
-			log.Fatalf("Config: Invalid configuration file")
+			logger.Fatal("Config: Invalid configuration file")
 		}
 
 		configPath, err := filepath.Abs(configPath)
 
 		if err != nil {
-			log.Fatalf("Config: %v", err)
+			logger.Fatal("Config: %v", err)
 		}
 
-		flowDef, err := parser.ParseConfig(configPath)
+		flowDef, err := workflow.ParseConfig(configPath)
 
 		if err != nil {
-			log.Fatalf("Parse error: %v", err)
+			logger.Fatal("Parse error: %v", err)
 		}
 
-		err = executor.Execute(flowDef)
+		execCtx, err := workflow.NewExecutionContext(
+			workflow.WithGlobalOptions(flowDef.BaseUrl, flowDef.Headers),
+			workflow.WithLogger(logger))
 
 		if err != nil {
-			log.Fatalf("Execution error: %v", err)
+			logger.Fatal("Execution context error: %v", err)
+		}
+
+		err = workflow.Execute(flowDef, execCtx)
+
+		if err != nil {
+			logger.Fatal("Execution error: %v", err)
 		}
 	},
 }

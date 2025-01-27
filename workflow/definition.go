@@ -1,6 +1,4 @@
-package config
-
-import "github.com/santhanuv/srotas/config/step/http"
+package workflow
 
 type Definition struct {
 	Version   string
@@ -8,6 +6,6 @@ type Definition struct {
 	Timeout   uint
 	MaxRetry  uint           `yaml:"max_retry"`
 	Variables map[string]any `yaml:",flow"`
-	Headers   http.Header    `yaml:",flow"`
+	Headers   Header         `yaml:",flow"`
 	Sequence  Sequence
 }

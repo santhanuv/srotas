@@ -1,20 +1,19 @@
-package parser
+package workflow
 
 import (
 	"os"
 
-	"github.com/santhanuv/srotas/config"
 	"gopkg.in/yaml.v3"
 )
 
-func ParseConfig(path string) (*config.Definition, error) {
+func ParseConfig(path string) (*Definition, error) {
 	cfg, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var def config.Definition
+	var def Definition
 	err = yaml.Unmarshal(cfg, &def)
 
 	if err != nil {

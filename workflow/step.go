@@ -1,15 +1,17 @@
-package step
+package workflow
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/santhanuv/srotas/config/step/http"
-	"github.com/santhanuv/srotas/contract"
 	"gopkg.in/yaml.v3"
 )
 
-type StepList []contract.Step
+type Step interface {
+	Execute(execCtx *executionContext) error
+}
+
+type StepList []Step
 
 func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 	var rawSteps []struct {
@@ -26,7 +28,7 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 	for _, rawStep := range rawSteps {
 		switch rawStep.Type {
 		case "http":
-			hs := &http.Request{
+			hs := &Request{
 				Type: rawStep.Type,
 			}
 			if err := rawStep.Step.Decode(hs); err != nil {
