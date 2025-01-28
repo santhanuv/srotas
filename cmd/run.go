@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 
@@ -11,6 +12,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(&runCommand)
+	runCommand.Flags().BoolP("verbose", "v", false, "Enable verbose mode to display detailed logs about the execution of the config.")
 }
 
 var runCommand = cobra.Command{
@@ -19,35 +21,44 @@ var runCommand = cobra.Command{
 	Long:  "Runs the provided configuration file. The configuration can be provided as a yaml file.",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		configPath := args[0]
-		logger := log.New(os.Stderr, os.Stderr, os.Stderr)
+		logger := log.Logger{}
+		logger.SetInfoWriter(os.Stderr)
+		logger.SetErrorWriter(os.Stderr)
 
+		verboseMode, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			logger.Fatal("verbose: %v", err)
+		}
+		if verboseMode {
+			logger.SetDebugWriter(os.Stderr)
+		} else {
+			logger.SetDebugWriter(io.Discard)
+		}
+
+		configPath := args[0]
 		if configPath == "" {
 			logger.Fatal("Config: Invalid configuration file")
 		}
 
-		configPath, err := filepath.Abs(configPath)
-
+		configPath, err = filepath.Abs(configPath)
 		if err != nil {
 			logger.Fatal("Config: %v", err)
 		}
 
 		flowDef, err := workflow.ParseConfig(configPath)
-
 		if err != nil {
 			logger.Fatal("Parse error: %v", err)
 		}
+		logger.DebugData(flowDef, "Parsed config:")
 
 		execCtx, err := workflow.NewExecutionContext(
 			workflow.WithGlobalOptions(flowDef.BaseUrl, flowDef.Headers),
-			workflow.WithLogger(logger))
-
+			workflow.WithLogger(&logger))
 		if err != nil {
 			logger.Fatal("Execution context error: %v", err)
 		}
 
 		err = workflow.Execute(flowDef, execCtx)
-
 		if err != nil {
 			logger.Fatal("Execution error: %v", err)
 		}

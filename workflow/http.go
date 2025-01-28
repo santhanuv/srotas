@@ -44,11 +44,13 @@ func (r *Request) Execute(context *executionContext) error {
 		time.Sleep(delayDuration)
 	}
 
+	context.logger.DebugData(req, "Http request:")
 	res, err := context.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 
+	context.logger.DebugData(res, "Http response:")
 	context.logger.Info("Http request '%s' responded with status %d", r.Name, res.StatusCode)
 
 	storeFromResponse(res.Body, r.Store, context)

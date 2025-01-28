@@ -52,6 +52,7 @@ func Execute(definition *Definition, context *executionContext) error {
 	steps := definition.Sequence.Steps
 
 	for _, step := range steps {
+		context.logger.DebugData(step, "Executing step:")
 		err := step.Execute(context)
 
 		if err != nil {

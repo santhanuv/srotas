@@ -1,6 +1,7 @@
 package log
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,15 +14,25 @@ type Logger struct {
 }
 
 func New(info, debug, error io.Writer) *Logger {
-	infoLogger := log.New(info, "[Info]: ", log.Ltime)
-	debugLogger := log.New(debug, "[Debug]: ", log.Ltime)
-	errorLogger := log.New(error, "[Error]: ", log.Ltime)
+	l := &Logger{}
 
-	return &Logger{
-		info:  infoLogger,
-		debug: debugLogger,
-		error: errorLogger,
-	}
+	l.SetInfoWriter(info)
+	l.SetDebugWriter(debug)
+	l.SetErrorWriter(error)
+
+	return l
+}
+
+func (l *Logger) SetDebugWriter(debug io.Writer) {
+	l.debug = log.New(debug, "[Debug]: ", log.Ltime)
+}
+
+func (l *Logger) SetInfoWriter(info io.Writer) {
+	l.info = log.New(info, "[Info]: ", log.Ltime)
+}
+
+func (l *Logger) SetErrorWriter(error io.Writer) {
+	l.error = log.New(error, "[Error]: ", log.Ltime)
 }
 
 func (l *Logger) Info(format string, args ...any) {
@@ -42,4 +53,14 @@ func (l *Logger) Error(format string, args ...any) {
 func (l *Logger) Fatal(format string, args ...any) {
 	formatLine := fmt.Sprintf("%s\n", format)
 	l.error.Fatalf(formatLine, args...)
+}
+
+func (l *Logger) DebugData(v any, prefix string, args ...any) {
+	fmtData, err := json.MarshalIndent(v, "", " ")
+	if err != nil {
+		l.Debug("Internal logging issue")
+	} else {
+
+		l.Debug("%s\n%s", prefix, fmtData)
+	}
 }
