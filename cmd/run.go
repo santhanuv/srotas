@@ -45,22 +45,27 @@ var runCommand = cobra.Command{
 			logger.Fatal("Config: %v", err)
 		}
 
+		logger.Debug("Parsing %s", configPath)
 		flowDef, err := workflow.ParseConfig(configPath)
 		if err != nil {
 			logger.Fatal("Parse error: %v", err)
 		}
-		logger.DebugData(flowDef, "Parsed config:")
+		logger.Debug("Successfully parsed %s", configPath)
 
+		logger.Debug("Initializing execution context")
 		execCtx, err := workflow.NewExecutionContext(
 			workflow.WithGlobalOptions(flowDef.BaseUrl, flowDef.Headers),
 			workflow.WithLogger(&logger))
 		if err != nil {
 			logger.Fatal("Execution context error: %v", err)
 		}
+		logger.Debug("Successfully initialized execution context")
 
+		logger.Debug("Executing configuration")
 		err = workflow.Execute(flowDef, execCtx)
 		if err != nil {
 			logger.Fatal("Execution error: %v", err)
 		}
+		logger.Debug("Successfully executed configuration")
 	},
 }

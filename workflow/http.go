@@ -31,12 +31,18 @@ type Request struct {
 
 // Execute executes the request with the given context.
 func (r *Request) Execute(context *executionContext) error {
+	context.logger.Debug("Executing http step '%s'", r.Name)
+	if r.Description != "" {
+		context.logger.Debug("Description: %s", r.Description)
+	}
+
 	req, err := r.build(context)
 	if err != nil {
 		return err
 	}
 
 	context.logger.Info("Sending http request '%s': %s %s", r.Name, req.Method, req.Url)
+	context.logger.DebugJson(req.Body, "Http request:")
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
 	if delayDuration > 0 {
@@ -44,22 +50,24 @@ func (r *Request) Execute(context *executionContext) error {
 		time.Sleep(delayDuration)
 	}
 
-	context.logger.DebugData(req, "Http request:")
 	res, err := context.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 
-	context.logger.DebugData(res, "Http response:")
 	context.logger.Info("Http request '%s' responded with status %d", r.Name, res.StatusCode)
+	context.logger.DebugJson(res.Body, "Http response body:")
 
 	storeFromResponse(res.Body, r.Store, context)
 
+	context.logger.Debug("Running validations on the http response")
 	err = r.Validations.Validate(context, res)
 
 	if err != nil {
 		return err
 	}
+
+	context.logger.Debug("Completed validating the http response")
 
 	return nil
 }
@@ -150,10 +158,11 @@ func storeFromResponse(body []byte, query map[string]string, context *executionC
 		val := qv.Value()
 
 		if val == nil {
-			context.logger.Info("Warning: Setting nil value for %s", variables[idx])
+			context.logger.Error("Warning: Setting nil value for %s", variables[idx])
 		}
 
 		store.Set(variables[idx], val)
+		context.logger.Debug("Setting '%s' with value '%s'", variables[idx], val)
 	}
 
 	return nil

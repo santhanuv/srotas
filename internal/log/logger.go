@@ -1,6 +1,7 @@
 package log
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -55,12 +56,9 @@ func (l *Logger) Fatal(format string, args ...any) {
 	l.error.Fatalf(formatLine, args...)
 }
 
-func (l *Logger) DebugData(v any, prefix string, args ...any) {
-	fmtData, err := json.MarshalIndent(v, "", " ")
-	if err != nil {
-		l.Debug("Internal logging issue")
-	} else {
+func (l *Logger) DebugJson(v []byte, prefix string, args ...any) {
+	var buf bytes.Buffer
+	json.Indent(&buf, v, "", " ")
 
-		l.Debug("%s\n%s", prefix, fmtData)
-	}
+	l.Debug("%s\n%s", prefix, buf.String())
 }
