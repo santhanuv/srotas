@@ -1,0 +1,50 @@
+version: "1.0"
+base_url: "https://67364cccaafa2ef22230216a.mockapi.io/api/test"
+timeout: 2000
+headers:
+  Accept: "application/json"
+  Content-Type: "application/json"
+
+variables:
+  data:
+    id: 1
+    name: "test"
+    list: ["4", 1, 3.5]
+  employees: [1,2,3]
+  api_key: "${env.API_KEY}"
+  user_id: "test_user_123"
+
+sequence:
+  name: "user_login_happy_path"
+  description: "Test successful user login flow"
+  variables:
+    username: "testuser@example.com"
+    password: "securepassword123"
+  steps:
+    - type: http
+      step:
+        name: "Get user details"
+        method: GET
+        url: "/users"
+        store:
+          user: "1.name"
+        validations:
+          status_code: 300
+    - type: http
+      step:
+        name: "Create a task"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        url: "/tasks"
+        body:
+          file: "request1.json"
+          data:
+            "name": "user"
+        validations:
+          asserts:
+            - value: "sample text"
+              selector: "body"
+            - value: "$user"
+              selector: "name"
+

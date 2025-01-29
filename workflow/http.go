@@ -336,7 +336,7 @@ func (rb *RequestBody) build(context *executionContext) ([]byte, error) {
 	store := context.store
 
 	var (
-		updatedContent []byte
+		updatedContent []byte = rb.Content
 		err            error
 	)
 
