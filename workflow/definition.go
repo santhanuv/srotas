@@ -7,5 +7,5 @@ type Definition struct {
 	MaxRetry  uint           `yaml:"max_retry"`
 	Variables map[string]any `yaml:",flow"`
 	Headers   Header         `yaml:",flow"`
-	Sequence  Sequence
+	Steps     StepList
 }

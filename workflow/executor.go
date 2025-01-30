@@ -49,7 +49,7 @@ func NewExecutionContext(options ...ExecutionOption) (*executionContext, error) 
 }
 
 func Execute(definition *Definition, context *executionContext) error {
-	steps := definition.Sequence.Steps
+	steps := definition.Steps
 
 	for _, step := range steps {
 		err := step.Execute(context)
