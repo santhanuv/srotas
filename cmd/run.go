@@ -46,7 +46,7 @@ var runCommand = cobra.Command{
 		}
 
 		logger.Debug("Parsing %s", configPath)
-		flowDef, err := workflow.ParseConfig(configPath)
+		flowDef, err := workflow.ParseConfig(configPath, &logger)
 		if err != nil {
 			logger.Fatal("Parse error: %v", err)
 		}
