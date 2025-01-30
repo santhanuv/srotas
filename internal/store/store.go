@@ -26,3 +26,7 @@ func (s *Store) Get(key string) (any, bool) {
 	val, ok := s.variables[key]
 	return val, ok
 }
+
+func (s *Store) ToMap() map[string]any {
+	return s.variables
+}

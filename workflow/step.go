@@ -36,6 +36,15 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 				continue
 			}
 			steps = append(steps, hs)
+		case "if":
+			ifStep := &If{
+				Type: rawStep.Type,
+			}
+			if err := rawStep.Step.Decode(ifStep); err != nil {
+				errors = append(errors, err.Error())
+				continue
+			}
+			steps = append(steps, ifStep)
 		default:
 			return fmt.Errorf("unsupported type %s for step", rawStep.Type)
 		}
@@ -53,7 +62,6 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 // rawStepNode allows to delay the parsing of actual step.
 type rawStepNode struct {
 	*yaml.Node
-	Type string
 }
 
 func (r *rawStepNode) UnmarshalYAML(value *yaml.Node) error {
