@@ -45,6 +45,15 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 				continue
 			}
 			steps = append(steps, ifStep)
+		case "while":
+			whileStep := &While{
+				Type: rawStep.Type,
+			}
+			if err := rawStep.Step.Decode(whileStep); err != nil {
+				errors = append(errors, err.Error())
+				continue
+			}
+			steps = append(steps, whileStep)
 		default:
 			return fmt.Errorf("unsupported type %s for step", rawStep.Type)
 		}
