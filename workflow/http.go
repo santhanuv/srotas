@@ -42,7 +42,7 @@ func (r *Request) Execute(context *executionContext) error {
 	}
 
 	context.logger.Info("Sending http request '%s': %s %s", r.Name, req.Method, req.Url)
-	context.logger.DebugJson(req.Body, "Http request:")
+	context.logger.DebugJson(req.Body, "Http request body:")
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
 	if delayDuration > 0 {
