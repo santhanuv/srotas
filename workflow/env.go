@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/expr-lang/expr"
 )
@@ -38,6 +39,8 @@ func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string,
 		cHeaders map[string][]string
 	)
 
+	maps.Copy(cVars, vars)
+
 	if e.varExprs != nil {
 		cVars = make(map[string]any, len(e.varExprs))
 		for vn, ve := range e.varExprs {
@@ -48,6 +51,10 @@ func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string,
 				return nil, nil, e
 			}
 
+			if _, ok := cVars[vn]; ok {
+				return nil, nil, fmt.Errorf("variable '%s' is alread defined", vn)
+			}
+
 			cVars[vn] = val
 		}
 	}
@@ -56,7 +63,7 @@ func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string,
 		cHeaders = make(map[string][]string, len(e.headerExprs))
 		for key, exprList := range e.headerExprs {
 			for _, e := range exprList {
-				v, err := expr.Eval(e, vars)
+				v, err := expr.Eval(e, cVars)
 
 				if err != nil {
 					e := fmt.Errorf("header '%s': %v", key, err)

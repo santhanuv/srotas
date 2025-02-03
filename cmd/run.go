@@ -22,6 +22,8 @@ func init() {
 	runCommand.Flags().BoolP("verbose", "v", false, "Enable verbose mode to display detailed logs about the execution of the config.")
 	runCommand.Flags().String("env", "", "Environment for the execution of config. It should be json as a string or a path to json file. Supports headers and variables.")
 	runCommand.Flags().Bool("output", false, "Output variables in the env")
+	runCommand.Flags().StringArrayP("headers", "H", nil, "add custom headers to global headers; the value of headers can be any expr supported expression")
+	runCommand.Flags().StringArrayP("vars", "V", nil, "define new variables; the value of the variable can be any exprt supported expression")
 }
 
 type output struct {
@@ -75,6 +77,22 @@ var runCommand = cobra.Command{
 			logger.Fatal("Env error: %s", args[0], err)
 		}
 
+		// Header flags
+		rfh, err := cmd.Flags().GetStringArray("headers")
+		if err != nil {
+			logger.Fatal("Header flag error: %s", err)
+		}
+
+		fheaders := parseStringHeader(rfh)
+
+		// Vars flag
+		rv, err := cmd.Flags().GetStringArray("vars")
+		if err != nil {
+			logger.Fatal("Vars flag error: %s", err)
+		}
+
+		fVars := parseStringVars(rv)
+
 		// Parsing
 		logger.Debug("Parsing %s", configPath)
 
@@ -88,11 +106,16 @@ var runCommand = cobra.Command{
 		// Context Initialization
 		logger.Debug("Initializing execution context")
 
-		err = env.AppendVars(flowDef.Variables)
-		if err != nil {
+		if err := env.AppendVars(flowDef.Variables); err != nil {
 			logger.Fatal("config variable error: %v", err)
 		}
+
+		if err := env.AppendVars(fVars); err != nil {
+			logger.Fatal("flag variable error: %v", err)
+		}
+
 		env.AppendHeaders(flowDef.Headers)
+		env.AppendHeaders(fheaders)
 
 		variables, headers, err := env.Compile(pVars)
 
@@ -289,4 +312,30 @@ func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll
 	}
 
 	return outJson, nil
+}
+
+func parseStringHeader(headers []string) map[string][]string {
+	hm := map[string][]string{}
+	for _, header := range headers {
+		kvp := strings.Split(header, ":")
+		k, v := kvp[0], kvp[1]
+		if _, ok := hm[k]; !ok {
+			hm[k] = []string{}
+		}
+
+		hm[k] = append(hm[k], v)
+	}
+
+	return hm
+}
+
+func parseStringVars(vars []string) map[string]string {
+	vm := map[string]string{}
+	for _, variable := range vars {
+		kvp := strings.Split(variable, "=")
+		k, v := kvp[0], kvp[1]
+		vm[k] = v
+	}
+
+	return vm
 }
