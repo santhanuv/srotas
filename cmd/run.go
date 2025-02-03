@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/expr-lang/expr"
 	"github.com/santhanuv/srotas/internal/log"
 	"github.com/santhanuv/srotas/internal/store"
 	"github.com/santhanuv/srotas/workflow"
@@ -21,6 +22,10 @@ func init() {
 	runCommand.Flags().BoolP("verbose", "v", false, "Enable verbose mode to display detailed logs about the execution of the config.")
 	runCommand.Flags().String("env", "", "Environment for the execution of config. It should be json as a string or a path to json file. Supports headers and variables.")
 	runCommand.Flags().Bool("output", false, "Output variables in the env")
+}
+
+type output struct {
+	Variables map[string]any
 }
 
 var runCommand = cobra.Command{
@@ -50,6 +55,13 @@ var runCommand = cobra.Command{
 		logger := log.Logger{}
 		configureLogger(&logger, isVerbose, configPath)
 
+		// Piped Input
+		pVars, err := parsePipedOutput()
+
+		if err != nil {
+			logger.Fatal("parsing input error: %s", err)
+		}
+
 		// Env setup
 		env := workflow.NewEnv(nil, nil)
 
@@ -58,7 +70,7 @@ var runCommand = cobra.Command{
 			logger.Fatal("Env flag error: %s", err)
 		}
 
-		err = extractEnv(env, envFlagVal)
+		err = extractEnvFromString(env, envFlagVal)
 		if err != nil {
 			logger.Fatal("Env error: %s", args[0], err)
 		}
@@ -76,15 +88,30 @@ var runCommand = cobra.Command{
 		// Context Initialization
 		logger.Debug("Initializing execution context")
 
+		err = env.AppendVars(flowDef.Variables)
+		if err != nil {
+			logger.Fatal("config variable error: %v", err)
+		}
 		env.AppendHeaders(flowDef.Headers)
 
+		variables, headers, err := env.Compile(pVars)
+
+		if err != nil {
+			logger.Fatal("env compile error: %s", err)
+		}
+
 		var s *store.Store
-		if env.Variables != nil {
-			s = store.NewStore(env.Variables)
+
+		if variables != nil {
+			s = store.NewStore(variables)
+
+			if pVars != nil {
+				s.Add(pVars)
+			}
 		}
 
 		execCtx, err := workflow.NewExecutionContext(
-			workflow.WithGlobalOptions(flowDef.BaseUrl, env.Headers),
+			workflow.WithGlobalOptions(flowDef.BaseUrl, headers),
 			workflow.WithLogger(&logger),
 			workflow.WithStore(s))
 
@@ -112,48 +139,24 @@ var runCommand = cobra.Command{
 
 		if outputRequired {
 			logger.Debug("Output is being send to stdout")
-			updatedVariables := execCtx.Variables()
-			outJE := json.NewEncoder(os.Stdout)
+			outJson, err := writeOutput(flowDef.Output, execCtx, flowDef.OutputAll)
 
-			outJE.SetIndent("", " ")
-
-			finalOutput := struct {
-				Variables map[string]any
-			}{
-				Variables: updatedVariables,
-			}
-
-			if err := outJE.Encode(finalOutput); err != nil {
+			if err != nil {
 				logger.Fatal("failed to encode output as json: %s", err)
 			}
+
+			_, err = os.Stdout.Write(outJson)
+
+			if err != nil {
+				logger.Fatal("output write error: %s")
+			}
+
+			logger.DebugJson(outJson, "Output:")
 		}
 	},
 }
 
-func extractEnv(env *workflow.Env, flagEnv string) error {
-	err := extractEnvFromString(env, flagEnv)
-
-	if err != nil {
-		return err
-	}
-
-	// Get input from stdin if pipe operator is used for the command
-	pipeEnv, err := getEnvFromPipe()
-
-	if err != nil {
-		return err
-	}
-
-	err = extractEnvFromString(env, string(pipeEnv))
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getEnvFromPipe() ([]byte, error) {
+func parsePipedOutput() (map[string]any, error) {
 	fileInfo, err := os.Stdin.Stat()
 
 	if err != nil {
@@ -171,7 +174,18 @@ func getEnvFromPipe() ([]byte, error) {
 		return nil, err
 	}
 
-	return data, nil
+	if string(data) == "" {
+		return nil, nil
+	}
+
+	var output output
+	err = json.Unmarshal(data, &output)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return output.Variables, nil
 }
 
 func extractEnvFromString(env *workflow.Env, source string) error {
@@ -180,7 +194,7 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 	}
 
 	var rawEnv struct {
-		Variables map[string]any
+		Variables map[string]string
 		Headers   map[string][]string
 	}
 
@@ -190,7 +204,12 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 			return err
 		}
 
-		env.AppendVars(rawEnv.Variables)
+		err = env.AppendVars(rawEnv.Variables)
+
+		if err != nil {
+			return err
+		}
+
 		env.AppendHeaders(rawEnv.Headers)
 
 		return nil
@@ -212,7 +231,12 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 		return err
 	}
 
-	env.AppendVars(rawEnv.Variables)
+	err = env.AppendVars(rawEnv.Variables)
+
+	if err != nil {
+		return err
+	}
+
 	env.AppendHeaders(rawEnv.Headers)
 
 	return nil
@@ -228,4 +252,41 @@ func configureLogger(logger *log.Logger, isVerbose bool, configFileName string) 
 	} else {
 		logger.SetDebugWriter(io.Discard)
 	}
+}
+
+func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll bool) ([]byte, error) {
+	if ves == nil && !outputAll {
+		return nil, fmt.Errorf("no variables output: please ensure output field exists")
+	}
+
+	vars := ec.Variables()
+
+	var oVars map[string]any
+
+	if outputAll {
+		oVars = vars
+	} else {
+		oVars = make(map[string]any, len(ves))
+		for vn, ve := range ves {
+			val, err := expr.Eval(ve, vars)
+
+			if err != nil {
+				return nil, err
+			}
+
+			oVars[vn] = val
+		}
+	}
+
+	out := output{
+		Variables: oVars,
+	}
+
+	outJson, err := json.MarshalIndent(out, "", " ")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return outJson, nil
 }

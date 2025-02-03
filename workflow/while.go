@@ -18,7 +18,7 @@ type While struct {
 	Body       StepList
 }
 
-func (w *While) Execute(context *executionContext) error {
+func (w *While) Execute(context *ExecutionContext) error {
 	variables := context.store.ToMap()
 
 	for key, val := range w.Init {

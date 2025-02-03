@@ -17,7 +17,7 @@ type If struct {
 	Else       StepList
 }
 
-func (i *If) Execute(context *executionContext) error {
+func (i *If) Execute(context *ExecutionContext) error {
 	variables := context.store.ToMap()
 	if i.cCondition == nil {
 		if i.Condition == "" {

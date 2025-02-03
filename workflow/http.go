@@ -30,7 +30,7 @@ type Request struct {
 }
 
 // Execute executes the request with the given context.
-func (r *Request) Execute(context *executionContext) error {
+func (r *Request) Execute(context *ExecutionContext) error {
 	context.logger.Debug("Executing http step '%s'", r.Name)
 	if r.Description != "" {
 		context.logger.Debug("Description: %s", r.Description)
@@ -73,7 +73,7 @@ func (r *Request) Execute(context *executionContext) error {
 }
 
 // build returns a custom http request after expanding all variables.
-func (r *Request) build(context *executionContext) (*http.Request, error) {
+func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 	body, err := r.Body.build(context)
 
 	if err != nil {
@@ -103,7 +103,7 @@ func (r *Request) build(context *executionContext) (*http.Request, error) {
 }
 
 // buildURL combines baseUrl with r.Url and expands any URL parameters. If r.Url is already a fully qualified URL, it is returned as-is, just expanding url parameters.
-func (r *Request) buildURL(baseUrl string, context *executionContext) (string, error) {
+func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, error) {
 	if baseUrl == "" {
 		return r.Url, nil
 	}
@@ -133,7 +133,7 @@ func (r *Request) buildURL(baseUrl string, context *executionContext) (string, e
 	return abURL, nil
 }
 
-func storeFromResponse(body []byte, query map[string]string, context *executionContext) error {
+func storeFromResponse(body []byte, query map[string]string, context *ExecutionContext) error {
 	if query == nil {
 		return nil
 	}
@@ -207,7 +207,7 @@ func (h *Header) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // build replaces the variable reference with the actual value from the context and also appends the global headers if any.
-func (h *Header) build(context *executionContext) map[string][]string {
+func (h *Header) build(context *ExecutionContext) map[string][]string {
 	gHeaders := context.globalOptions.header
 	store := context.store
 	expandedHeader := make(map[string][]string, len(*h)+len(gHeaders))
@@ -265,7 +265,7 @@ func (q *QueryParam) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // expandVariables replaces the variable references with the acutal value from the context.
-func (h *QueryParam) expandVariables(context *executionContext) map[string][]string {
+func (h *QueryParam) expandVariables(context *ExecutionContext) map[string][]string {
 	expandedQP := make(map[string][]string, len(*h))
 	store := context.store
 
@@ -341,7 +341,7 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // build merges rb.Data with rb.Content and returns the result.
-func (rb *RequestBody) build(context *executionContext) ([]byte, error) {
+func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 	store := context.store
 
 	var (
@@ -373,7 +373,7 @@ type Validator struct {
 	Asserts     []Assert
 }
 
-func (v *Validator) Validate(context *executionContext, response *http.Response) error {
+func (v *Validator) Validate(context *ExecutionContext, response *http.Response) error {
 	if v.Status_code != nil && *v.Status_code != response.StatusCode {
 		return fmt.Errorf("Status code: Expected %d but got %d", *v.Status_code, response.StatusCode)
 	}
@@ -395,7 +395,7 @@ type Assert struct {
 	Selector string
 }
 
-func (a *Assert) Validate(context *executionContext, response *http.Response) error {
+func (a *Assert) Validate(context *ExecutionContext, response *http.Response) error {
 	var expected any = a.Value
 
 	if strings.HasPrefix(a.Value, "$") {

@@ -18,6 +18,12 @@ func NewStore(initialValues map[string]any) *Store {
 	}
 }
 
+func (s *Store) Add(vars map[string]any) {
+	for vn, vv := range vars {
+		s.variables[vn] = vv
+	}
+}
+
 func (s *Store) Set(key string, value any) {
 	s.variables[key] = value
 }

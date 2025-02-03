@@ -8,7 +8,7 @@ import (
 )
 
 type Step interface {
-	Execute(execCtx *executionContext) error
+	Execute(execCtx *ExecutionContext) error
 }
 
 type StepList []Step

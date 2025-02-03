@@ -8,7 +8,7 @@ import (
 	"github.com/santhanuv/srotas/internal/store"
 )
 
-type executionContext struct {
+type ExecutionContext struct {
 	httpClient    *http.Client
 	store         *store.Store
 	globalOptions *globalOptions
@@ -20,10 +20,10 @@ type globalOptions struct {
 	header  map[string][]string
 }
 
-type ExecutionOption func(context *executionContext) error
+type ExecutionOption func(context *ExecutionContext) error
 
-func NewExecutionContext(options ...ExecutionOption) (*executionContext, error) {
-	var context executionContext
+func NewExecutionContext(options ...ExecutionOption) (*ExecutionContext, error) {
+	var context ExecutionContext
 
 	for _, option := range options {
 		err := option(&context)
@@ -48,7 +48,7 @@ func NewExecutionContext(options ...ExecutionOption) (*executionContext, error) 
 	return &context, nil
 }
 
-func Execute(definition *Definition, context *executionContext) error {
+func Execute(definition *Definition, context *ExecutionContext) error {
 	steps := definition.Steps
 
 	for _, step := range steps {
@@ -63,7 +63,7 @@ func Execute(definition *Definition, context *executionContext) error {
 }
 
 func WithGlobalOptions(baseUrl string, header map[string][]string) ExecutionOption {
-	return func(context *executionContext) error {
+	return func(context *ExecutionContext) error {
 		gOpts := globalOptions{
 			baseUrl: baseUrl,
 			header:  header,
@@ -76,7 +76,7 @@ func WithGlobalOptions(baseUrl string, header map[string][]string) ExecutionOpti
 }
 
 func WithHttpClient(client *http.Client) ExecutionOption {
-	return func(context *executionContext) error {
+	return func(context *ExecutionContext) error {
 		context.httpClient = client
 
 		return nil
@@ -84,7 +84,7 @@ func WithHttpClient(client *http.Client) ExecutionOption {
 }
 
 func WithLogger(logger *log.Logger) ExecutionOption {
-	return func(context *executionContext) error {
+	return func(context *ExecutionContext) error {
 		context.logger = logger
 
 		return nil
@@ -92,13 +92,13 @@ func WithLogger(logger *log.Logger) ExecutionOption {
 }
 
 func WithStore(store *store.Store) ExecutionOption {
-	return func(context *executionContext) error {
+	return func(context *ExecutionContext) error {
 		context.store = store
 
 		return nil
 	}
 }
 
-func (e *executionContext) Variables() map[string]any {
+func (e *ExecutionContext) Variables() map[string]any {
 	return e.store.ToMap()
 }

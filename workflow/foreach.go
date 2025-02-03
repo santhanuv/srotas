@@ -15,7 +15,7 @@ type ForEach struct {
 	Body StepList
 }
 
-func (f *ForEach) Execute(context *executionContext) error {
+func (f *ForEach) Execute(context *ExecutionContext) error {
 	context.logger.Debug("Executing forEach step")
 	variables := context.store.ToMap()
 
