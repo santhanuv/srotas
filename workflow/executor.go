@@ -98,3 +98,7 @@ func WithStore(store *store.Store) ExecutionOption {
 		return nil
 	}
 }
+
+func (e *executionContext) Variables() map[string]any {
+	return e.store.ToMap()
+}
