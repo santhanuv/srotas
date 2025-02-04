@@ -70,7 +70,7 @@ func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 
 	if len(errors) > 0 {
 		err := strings.Join(errors, "\n ")
-		return fmt.Errorf("Steps:\n %s", err)
+		return fmt.Errorf("\n%v", err)
 	}
 
 	*s = steps

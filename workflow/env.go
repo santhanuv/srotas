@@ -16,7 +16,7 @@ func (e *Env) AppendVars(varExprList ...map[string]string) error {
 	for _, v := range varExprList {
 		for name, val := range v {
 			if _, ok := e.varExprs[name]; ok {
-				return fmt.Errorf("variable '%s' is alread defined", name)
+				return fmt.Errorf("variable '%s' is already defined", name)
 			}
 			e.varExprs[name] = val
 		}
@@ -39,7 +39,10 @@ func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string,
 		cHeaders map[string][]string
 	)
 
-	maps.Copy(cVars, vars)
+	if vars != nil {
+		cVars := make(map[string]any, len(e.varExprs)+len(vars))
+		maps.Copy(cVars, vars)
+	}
 
 	if e.varExprs != nil {
 		cVars = make(map[string]any, len(e.varExprs))

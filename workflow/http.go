@@ -1,14 +1,16 @@
 package workflow
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/expr-lang/expr"
 	"github.com/santhanuv/srotas/internal/http"
-	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"gopkg.in/yaml.v3"
 )
@@ -17,7 +19,6 @@ import (
 type Request struct {
 	Type        string
 	Name        string
-	Description string
 	Url         string
 	Method      string
 	Body        RequestBody `yaml:"body"`
@@ -32,9 +33,6 @@ type Request struct {
 // Execute executes the request with the given context.
 func (r *Request) Execute(context *ExecutionContext) error {
 	context.logger.Debug("Executing http step '%s'", r.Name)
-	if r.Description != "" {
-		context.logger.Debug("Description: %s", r.Description)
-	}
 
 	req, err := r.build(context)
 	if err != nil {
@@ -58,13 +56,41 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	context.logger.Info("Http request '%s' responded with status %d", r.Name, res.StatusCode)
 	context.logger.DebugJson(res.Body, "Http response body:")
 
-	storeFromResponse(res.Body, r.Store, context)
+	var pb any
+	err = json.Unmarshal(res.Body, &pb)
 
-	context.logger.Debug("Running validations on the http response")
-	err = r.Validations.Validate(context, res)
+	resBody := responseBody{
+		body: pb,
+	}
+
+	if err != nil {
+		return fmt.Errorf("http response parse error: %v", err)
+	}
+
+	err = resBody.store(r.Store, context)
 
 	if err != nil {
 		return err
+	}
+
+	context.logger.Debug("Running validations on the http response")
+	err = r.Validations.Validate(context, res.StatusCode, &resBody)
+
+	if err != nil {
+		fres := struct {
+			StatusCode uint
+			Body       any
+		}{
+			StatusCode: res.StatusCode,
+			Body:       resBody.body,
+		}
+		jres, je := json.MarshalIndent(fres, "", " ")
+
+		if je != nil {
+			return fmt.Errorf("unable to output response: %v", je)
+		}
+
+		return fmt.Errorf("%v\nResponse: %s", err, string(jres))
 	}
 
 	context.logger.Debug("Completed validating the http response")
@@ -72,7 +98,7 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	return nil
 }
 
-// build returns a custom http request after expanding all variables.
+// build returns a custom http request after evaluating all value expressions.
 func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 	body, err := r.Body.build(context)
 
@@ -88,8 +114,17 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 		return nil, err
 	}
 
-	headers := r.Headers.build(context)
-	queryParams := r.QueryParams.expandVariables(context)
+	headers, err := r.Headers.compile(context)
+
+	if err != nil {
+		return nil, err
+	}
+
+	queryParams, err := r.QueryParams.compile(context)
+
+	if err != nil {
+		return nil, err
+	}
 
 	req := http.Request{
 		Method:      r.Method,
@@ -104,11 +139,26 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 
 // buildURL combines baseUrl with r.Url and expands any URL parameters. If r.Url is already a fully qualified URL, it is returned as-is, just expanding url parameters.
 func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, error) {
-	if baseUrl == "" {
-		return r.Url, nil
+	if r.Url == "" {
+		return "", fmt.Errorf("invalid url '%s' for http request '%s'", r.Url, r.Name)
 	}
 
-	var abURL = ""
+	store := context.store
+	for idx, urlParam := range strings.Split(r.Url, "/:") {
+		if idx == 0 {
+			continue
+		}
+
+		val, ok := store.Get(urlParam)
+		if !ok {
+			return "", fmt.Errorf("variable not found: url '%s': '%s'", urlParam, r.Url)
+		}
+
+		r.Url = strings.ReplaceAll(r.Url, fmt.Sprintf(":%s", urlParam), fmt.Sprintf("%v", val))
+	}
+
+	var abURL = r.Url
+
 	if !strings.Contains(r.Url, "://") {
 		baseUrl = strings.TrimSuffix(baseUrl, "/")
 		url := strings.TrimPrefix(r.Url, "/")
@@ -116,56 +166,7 @@ func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, e
 		abURL = fmt.Sprintf("%s/%s", baseUrl, url)
 	}
 
-	store := context.store
-	for idx, urlParam := range strings.Split(abURL, "/:") {
-		if idx == 0 {
-			continue
-		}
-
-		val, ok := store.Get(urlParam)
-		if !ok {
-			return "", fmt.Errorf("Url prameter not found in variable store: '%s'", urlParam)
-		}
-
-		abURL = strings.ReplaceAll(abURL, fmt.Sprintf(":%s", urlParam), fmt.Sprintf("%v", val))
-	}
-
 	return abURL, nil
-}
-
-func storeFromResponse(body []byte, query map[string]string, context *ExecutionContext) error {
-	if query == nil {
-		return nil
-	}
-
-	selectors := make([]string, 0, len(query))
-	variables := make([]string, 0, len(query))
-
-	for variable, selector := range query {
-		selectors = append(selectors, selector)
-		variables = append(variables, variable)
-	}
-
-	if ok := gjson.Valid(string(body)); !ok {
-		return fmt.Errorf("Error: Invalid json response")
-	}
-
-	queryVal := gjson.GetManyBytes(body, selectors...)
-
-	store := context.store
-
-	for idx, qv := range queryVal {
-		val := qv.Value()
-
-		if val == nil {
-			context.logger.Error("Warning: Setting nil value for %s", variables[idx])
-		}
-
-		store.Set(variables[idx], val)
-		context.logger.Debug("Setting '%s' with value '%s'", variables[idx], val)
-	}
-
-	return nil
 }
 
 // CSVMap is a data structure that maps a single key to multiple values.
@@ -206,47 +207,39 @@ func (h *Header) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-// build replaces the variable reference with the actual value from the context and also appends the global headers if any.
-func (h *Header) build(context *ExecutionContext) map[string][]string {
-	gHeaders := context.globalOptions.header
-	store := context.store
-	expandedHeader := make(map[string][]string, len(*h)+len(gHeaders))
+// compile returns the compiled headers after evaluating the value expressions of headers and also appends the global headers if any.
+func (h *Header) compile(context *ExecutionContext) (map[string][]string, error) {
+	gHeaders := context.globalOptions.headers
+	vars := context.store.ToMap()
 
-	for key, values := range *h {
-		expandedValues := make([]string, 0, len(values))
+	cHeaders := make(map[string][]string, len(*h)+len(gHeaders))
+	maps.Copy(cHeaders, gHeaders)
 
-		for _, val := range values {
-			if strings.HasPrefix(val, "$") {
-				rawVarVal, ok := store.Get(val[1:])
+	for key, ves := range *h {
+		vals := make([]string, 0, len(ves))
 
-				if !ok {
-					context.logger.Info("variable:%s not found in store", val[1:])
-					continue
-				}
+		for _, ve := range ves {
+			val, err := expr.Eval(ve, vars)
 
-				var varVal string
-				if varVal, ok = rawVarVal.(string); !ok {
-					context.logger.Info("variable:%s does not have a string value", val[1:])
-					continue
-				}
-
-				expandedValues = append(expandedValues, varVal)
-				continue
+			if err != nil {
+				e := fmt.Errorf("invalid expression '%s' for header '%s': %v", ve, key, err)
+				return nil, e
 			}
 
-			expandedValues = append(expandedValues, val)
+			v, ok := val.(string)
+
+			if !ok {
+				e := fmt.Errorf("expression '%s' for header '%s' should evaluate to string", ve, key)
+				return nil, e
+			}
+
+			vals = append(vals, v)
 		}
 
-		expandedHeader[key] = expandedValues
+		cHeaders[key] = vals
 	}
 
-	for key, values := range gHeaders {
-		for _, val := range values {
-			expandedHeader[key] = append(expandedHeader[key], val)
-		}
-	}
-
-	return expandedHeader
+	return cHeaders, nil
 }
 
 // QueryParam represents the HTTP query params for the workflow step.
@@ -264,40 +257,36 @@ func (q *QueryParam) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-// expandVariables replaces the variable references with the acutal value from the context.
-func (h *QueryParam) expandVariables(context *ExecutionContext) map[string][]string {
-	expandedQP := make(map[string][]string, len(*h))
-	store := context.store
+// compile returns the compiled query parameters after evaluating the value expressions for each query parameter.
+func (q *QueryParam) compile(context *ExecutionContext) (map[string][]string, error) {
+	cqps := make(map[string][]string, len(*q))
+	vars := context.store.ToMap()
 
-	for key, values := range *h {
-		expandedValues := make([]string, 0, len(values))
+	for key, ves := range *q {
+		vals := make([]string, 0, len(ves))
 
-		for _, val := range values {
-			if strings.HasPrefix(val, "$") {
-				rawVarVal, ok := store.Get(val[1:])
+		for _, ve := range ves {
+			val, err := expr.Eval(ve, vars)
 
-				if !ok {
-					context.logger.Info("variable:%s not found in store", val[1:])
-					continue
-				}
-
-				var varVal string
-				if varVal, ok = rawVarVal.(string); !ok {
-					context.logger.Info("variable:%s does not have a string value", val[1:])
-					continue
-				}
-
-				expandedValues = append(expandedValues, varVal)
-				continue
+			if err != nil {
+				e := fmt.Errorf("invalid expression '%s' for query param '%s': %v", ve, key, err)
+				return nil, e
 			}
 
-			expandedValues = append(expandedValues, val)
+			v, ok := val.(string)
+
+			if !ok {
+				e := fmt.Errorf("expression '%s' for query param '%s' should evalute to string", ve, key)
+				return nil, e
+			}
+
+			vals = append(vals, v)
 		}
 
-		expandedQP[key] = expandedValues
+		cqps[key] = vals
 	}
 
-	return expandedQP
+	return cqps, nil
 }
 
 // RequestBody represents the body of the HTTP request in the workflow step.
@@ -340,24 +329,20 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-// build merges rb.Data with rb.Content and returns the result.
+// build builds the request body with rb.Content as the base and updates the field values after evaluating expressions in rb.Data.
 func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
-	store := context.store
+	vars := context.store.ToMap()
 
-	var (
-		updatedContent []byte = rb.Content
-		err            error
-	)
+	var updatedContent []byte = rb.Content
 
-	for field, variable := range rb.Data {
-		value, ok := store.Get(variable)
+	for f, e := range rb.Data {
+		val, err := expr.Eval(e, vars)
 
-		if !ok {
-			context.logger.Info("varable:'%s' not found in store", variable)
-			continue
+		if err != nil {
+			return nil, fmt.Errorf("expression '%s' cannot be evaluated for variable '%s': %v", e, f, err)
 		}
 
-		updatedContent, err = sjson.SetBytes(rb.Content, field, value)
+		updatedContent, err = sjson.SetBytes(rb.Content, f, val)
 
 		if err != nil {
 			return nil, err
@@ -367,19 +352,54 @@ func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 	return updatedContent, nil
 }
 
+type responseBody struct {
+	body any `expr:"response"`
+}
+
+// store stores the new set of variables after evaluating the variable expressions in varExprs
+func (rb *responseBody) store(varExprs map[string]string, context *ExecutionContext) error {
+	context.logger.Debug("Storing variables from response")
+
+	if varExprs == nil {
+		return nil
+	}
+
+	newVars := make(map[string]any, len(varExprs))
+
+	vars := context.store.ToMap()
+	vars["response"] = rb.body
+
+	for vn, ve := range varExprs {
+		val, err := expr.Eval(ve, vars)
+
+		if err != nil {
+			return fmt.Errorf("invalid expression '%s' for variable '%s': %v", ve, vn, err)
+		}
+
+		newVars[vn] = val
+	}
+
+	context.store.Add(newVars)
+
+	return nil
+}
+
 // Validator is a data structure that represents the validations to the HTTP request.
 type Validator struct {
 	Status_code *uint
 	Asserts     []Assert
 }
 
-func (v *Validator) Validate(context *ExecutionContext, response *http.Response) error {
-	if v.Status_code != nil && *v.Status_code != response.StatusCode {
-		return fmt.Errorf("Status code: Expected %d but got %d", *v.Status_code, response.StatusCode)
+func (v *Validator) Validate(context *ExecutionContext, statusCode uint, rb *responseBody) error {
+	if v.Status_code != nil && *v.Status_code != statusCode {
+		return fmt.Errorf("Status code: Expected %d but got %d", *v.Status_code, statusCode)
 	}
 
+	vars := context.store.ToMap()
+	vars["response"] = rb.body
+
 	for _, assert := range v.Asserts {
-		err := assert.Validate(context, response)
+		err := assert.Validate(vars, rb)
 
 		if err != nil {
 			return err
@@ -390,31 +410,23 @@ func (v *Validator) Validate(context *ExecutionContext, response *http.Response)
 }
 
 // Assert represents an assertion where the Value represents the expected value and Selector represents the GJSON string that is used to extract the value from the JSON response.
-type Assert struct {
-	Value    string
-	Selector string
-}
+type Assert string
 
-func (a *Assert) Validate(context *ExecutionContext, response *http.Response) error {
-	var expected any = a.Value
+func (a *Assert) Validate(vars map[string]any, rb *responseBody) error {
+	val, err := expr.Eval(string(*a), vars)
 
-	if strings.HasPrefix(a.Value, "$") {
-		var ok bool
-		expected, ok = context.store.Get(a.Value[1:])
-
-		if !ok {
-			return fmt.Errorf("Invalid variable name in assert")
-		}
+	if err != nil {
+		return fmt.Errorf("invalid expression '%s' for assert: %v", *a, err)
 	}
 
-	actual := gjson.GetBytes(response.Body, a.Selector).Value()
+	isValid, ok := val.(bool)
 
-	if actual == nil {
-		return fmt.Errorf("Assert failed: value not found in response body")
+	if !ok {
+		return fmt.Errorf("evaluating expression '%s' should produce a boolean for assert", *a)
 	}
 
-	if expected != actual {
-		return fmt.Errorf("Assert failed: expected '%s' but got '%s'", expected, actual)
+	if !isValid {
+		return fmt.Errorf("assertion '%s' failed", *a)
 	}
 
 	return nil

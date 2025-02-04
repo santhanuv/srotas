@@ -50,6 +50,8 @@ func (f *ForEach) Execute(context *ExecutionContext) error {
 		}
 	}
 
+	context.store.Remove(f.As)
+
 	context.logger.Debug("Completed the execution of forEach step")
 	return nil
 }

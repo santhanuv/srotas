@@ -17,7 +17,7 @@ type ExecutionContext struct {
 
 type globalOptions struct {
 	baseUrl string
-	header  map[string][]string
+	headers map[string][]string
 }
 
 type ExecutionOption func(context *ExecutionContext) error
@@ -62,11 +62,11 @@ func Execute(definition *Definition, context *ExecutionContext) error {
 	return nil
 }
 
-func WithGlobalOptions(baseUrl string, header map[string][]string) ExecutionOption {
+func WithGlobalOptions(baseUrl string, headers map[string][]string) ExecutionOption {
 	return func(context *ExecutionContext) error {
 		gOpts := globalOptions{
 			baseUrl: baseUrl,
-			header:  header,
+			headers: headers,
 		}
 
 		context.globalOptions = &gOpts

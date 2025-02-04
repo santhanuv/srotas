@@ -33,6 +33,10 @@ func (s *Store) Get(key string) (any, bool) {
 	return val, ok
 }
 
+func (s *Store) Remove(key string) {
+	delete(s.variables, key)
+}
+
 func (s *Store) ToMap() map[string]any {
 	return s.variables
 }
