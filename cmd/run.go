@@ -14,16 +14,22 @@ import (
 	"github.com/santhanuv/srotas/internal/store"
 	"github.com/santhanuv/srotas/workflow"
 	"github.com/spf13/cobra"
-	"github.com/tidwall/gjson"
 )
 
 func init() {
 	rootCmd.AddCommand(&runCommand)
-	runCommand.Flags().BoolP("verbose", "v", false, "Enable verbose mode to display detailed logs about the execution of the config.")
-	runCommand.Flags().String("env", "", "Environment for the execution of config. It should be json as a string or a path to json file. Supports headers and variables.")
-	runCommand.Flags().Bool("output", false, "Output variables in the env")
-	runCommand.Flags().StringArrayP("headers", "H", nil, "add custom headers to global headers; the value of headers can be any expr supported expression")
-	runCommand.Flags().StringArrayP("vars", "V", nil, "define new variables; the value of the variable can be any exprt supported expression")
+
+	runCommand.Flags().BoolP("debug", "D", false,
+		"Enables debug mode, providing detailed logs about the execution of the configuration file.")
+
+	runCommand.Flags().StringP("env", "E", "",
+		"Loads global headers and variables from a JSON string or file. The JSON may contain Variables and Headers fields, where values are expressions. At least one of these fields must be present, and duplicate variable names result in an error.")
+
+	runCommand.Flags().StringArrayP("header", "H", nil,
+		"Adds an additional global header in the format 'key:value'. Multiple headers can be specified, and values for the same key are combined with those in the config file. The value supports expressions, allowing dynamic header generation using defined or command-line variables.")
+
+	runCommand.Flags().StringArrayP("var", "V", nil,
+		"Defines a global variable in the format name=value, where the value is an expression. Variables must be unique; redefining an existing one results in an error.")
 }
 
 type output struct {
@@ -48,7 +54,7 @@ var runCommand = cobra.Command{
 		}
 
 		// Verbose flag setup
-		isVerbose, err := cmd.Flags().GetBool("verbose")
+		isVerbose, err := cmd.Flags().GetBool("debug")
 		if err != nil {
 			deflog.Fatalf("verbose flag error: %v", err)
 		}
@@ -78,17 +84,21 @@ var runCommand = cobra.Command{
 		}
 
 		// Header flags
-		rfh, err := cmd.Flags().GetStringArray("headers")
+		rfh, err := cmd.Flags().GetStringArray("header")
 		if err != nil {
 			logger.Fatal("Header flag error: %s", err)
 		}
 
-		fheaders := parseStringHeader(rfh)
+		fheaders, err := parseStringHeader(rfh)
+
+		if err != nil {
+			logger.Fatal("header flag error: %v", err)
+		}
 
 		// Vars flag
-		rv, err := cmd.Flags().GetStringArray("vars")
+		rv, err := cmd.Flags().GetStringArray("var")
 		if err != nil {
-			logger.Fatal("Vars flag error: %s", err)
+			logger.Fatal("Var flag error: %s", err)
 		}
 
 		fVars := parseStringVars(rv)
@@ -155,12 +165,7 @@ var runCommand = cobra.Command{
 		logger.Debug("Successfully executed configuration")
 
 		// Output updated variables
-		outputRequired, err := cmd.Flags().GetBool("output")
-		if err != nil {
-			logger.Fatal("Output flag error: %s", err)
-		}
-
-		if outputRequired {
+		if flowDef.OutputAll || flowDef.Output != nil {
 			logger.Debug("Output is being send to stdout")
 			outJson, err := writeOutput(flowDef.Output, execCtx, flowDef.OutputAll)
 
@@ -221,7 +226,7 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 		Headers   map[string][]string
 	}
 
-	if gjson.Valid(source) {
+	if json.Valid([]byte(source)) {
 		err := json.Unmarshal([]byte(source), &rawEnv)
 		if err != nil {
 			return err
@@ -279,7 +284,7 @@ func configureLogger(logger *log.Logger, isVerbose bool, configFileName string) 
 
 func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll bool) ([]byte, error) {
 	if ves == nil && !outputAll {
-		return nil, fmt.Errorf("no variables output: please ensure output field exists")
+		return nil, fmt.Errorf("output error: please ensure output field exists")
 	}
 
 	vars := ec.Variables()
@@ -314,11 +319,16 @@ func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll
 	return outJson, nil
 }
 
-func parseStringHeader(headers []string) map[string][]string {
+func parseStringHeader(headers []string) (map[string][]string, error) {
 	hm := map[string][]string{}
 	for _, header := range headers {
 		kvp := strings.Split(header, ":")
-		k, v := kvp[0], kvp[1]
+
+		if len(kvp) != 2 {
+			return nil, fmt.Errorf("header should be in the form 'key:val'")
+		}
+
+		k, v := strings.TrimSpace(kvp[0]), strings.TrimSpace(kvp[1])
 		if _, ok := hm[k]; !ok {
 			hm[k] = []string{}
 		}
@@ -326,7 +336,7 @@ func parseStringHeader(headers []string) map[string][]string {
 		hm[k] = append(hm[k], v)
 	}
 
-	return hm
+	return hm, nil
 }
 
 func parseStringVars(vars []string) map[string]string {
