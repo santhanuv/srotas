@@ -7,12 +7,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Step represents an executable step within the configuration workflow.
+// Each step must implement the Execute method, which performs the step's operation
+// using the provided ExecutionContext.
 type Step interface {
 	Execute(execCtx *ExecutionContext) error
 }
 
+// Represents a sequence of steps.
 type StepList []Step
 
+// UnmarshalYAML unmarshals the steps to specific step types.
 func (s *StepList) UnmarshalYAML(value *yaml.Node) error {
 	var rawSteps []struct {
 		Type string

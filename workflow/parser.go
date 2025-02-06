@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ParseConfig reads the configuration file from the given path and returns a [Definition] representing its contents.
 func ParseConfig(path string, logger *log.Logger) (*Definition, error) {
 	cfg, err := os.ReadFile(path)
 
@@ -26,12 +27,9 @@ func ParseConfig(path string, logger *log.Logger) (*Definition, error) {
 		return nil, err
 	}
 
-	logger.Debug("Changed current working directory to %s for parsing", configDir)
 	defer func() {
-		if err := os.Chdir(wd); err == nil {
-			logger.Debug("Changed current working directory back to %s", wd)
-		} else {
-			logger.Debug("Unable to reset current working directory to %s: Error: %v", wd, err)
+		if err := os.Chdir(wd); err != nil {
+			logger.Error("Unable to reset current working directory to '%s': Error: %v", wd, err)
 		}
 	}()
 

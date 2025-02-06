@@ -7,13 +7,16 @@ import (
 	"github.com/expr-lang/expr"
 )
 
-type Env struct {
+type PreExecEnv struct {
 	varExprs    map[string]string
 	headerExprs map[string][]string
 }
 
-func (e *Env) AppendVars(varExprList ...map[string]string) error {
-	for _, v := range varExprList {
+// AddVars merges the given variables into the PreExecutionEnv.
+// Each key-value pair represents a variable name and its corresponding expr expression.
+// Returns an error if a variable with the same name already exists.
+func (e *PreExecEnv) AddVars(exprs ...map[string]string) error {
+	for _, v := range exprs {
 		for name, val := range v {
 			if _, ok := e.varExprs[name]; ok {
 				return fmt.Errorf("variable '%s' is already defined", name)
@@ -25,15 +28,20 @@ func (e *Env) AppendVars(varExprList ...map[string]string) error {
 	return nil
 }
 
-func (e *Env) AppendHeaders(headerExprList ...map[string][]string) {
-	for _, headers := range headerExprList {
+// AddHeaders merges the given headers into the PreExecutionEnv.
+// Each key-value pair represents a header name and its corresponding expr expressions.
+// Headers with the same name will have their values appended.
+func (e *PreExecEnv) AddHeaders(exprs ...map[string][]string) {
+	for _, headers := range exprs {
 		for key, val := range headers {
 			e.headerExprs[key] = append(e.headerExprs[key], val...)
 		}
 	}
 }
 
-func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string, error) {
+// Compile evaluates the variable and header expressions using the provided vars as the evaluation environment.
+// Returns the evaluated variables and headers, with expressions resolved to their final values.
+func (e *PreExecEnv) Compile(vars map[string]any) (map[string]any, map[string][]string, error) {
 	var (
 		cVars    map[string]any
 		cHeaders map[string][]string
@@ -88,17 +96,18 @@ func (e *Env) Compile(vars map[string]any) (map[string]any, map[string][]string,
 	return cVars, cHeaders, nil
 }
 
-func NewEnv(varExprs map[string]string, headerExprs map[string][]string) *Env {
-	if varExprs == nil {
-		varExprs = make(map[string]string)
+// NewPreExecEnv initializes and returns a new [PreExecEnv] with the given variable and header expressions.
+func NewPreExecEnv(vexprs map[string]string, hexprs map[string][]string) *PreExecEnv {
+	if vexprs == nil {
+		vexprs = make(map[string]string)
 	}
 
-	if headerExprs == nil {
-		headerExprs = make(map[string][]string)
+	if hexprs == nil {
+		hexprs = make(map[string][]string)
 	}
 
-	return &Env{
-		varExprs:    varExprs,
-		headerExprs: headerExprs,
+	return &PreExecEnv{
+		varExprs:    vexprs,
+		headerExprs: hexprs,
 	}
 }

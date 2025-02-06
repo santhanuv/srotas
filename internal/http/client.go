@@ -14,9 +14,11 @@ type Client struct {
 // NewClient returns a new http client with the specified timeout in milliseconds
 func NewClient(timeout uint) *Client {
 	timeoutMS := time.Duration.Milliseconds(time.Duration(timeout))
+
 	c := http.Client{
 		Timeout: time.Duration(timeoutMS),
 	}
+
 	return &Client{
 		httpClient: c,
 	}

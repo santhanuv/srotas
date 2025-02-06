@@ -7,21 +7,25 @@ import (
 	"github.com/expr-lang/expr"
 )
 
+// ForEach represents a loop step that executes the steps in Body for each item in List.
+// The As field defines the variable name that stores each item during execution.
 type ForEach struct {
-	Type string
-	Name string
-	List string
-	As   string
-	Body StepList
+	Type string   // The type of the step.
+	Name string   // Identifier for the step.
+	List string   // The list of items to iterate over.
+	As   string   // The variable name to store the current item in each iteration.
+	Body StepList // The sequence of steps executed for each item.
 }
 
+// Execute executes the step with the specified context.
 func (f *ForEach) Execute(context *ExecutionContext) error {
-	context.logger.Debug("Executing forEach step")
-	variables := context.store.ToMap()
+	variables := context.store.Map()
 
 	if val, ok := variables[f.As]; val != nil && ok {
-		return fmt.Errorf("ForEach: variable '%s' already defined.", f.As)
+		return fmt.Errorf("foreach step '%s': variable '%s' already defined.", f.Name, f.As)
 	}
+
+	defer context.store.Remove(f.As)
 
 	program, err := expr.Compile(f.List, expr.Env(variables), expr.AsKind(reflect.Slice))
 
@@ -38,7 +42,6 @@ func (f *ForEach) Execute(context *ExecutionContext) error {
 	items := output.([]any)
 
 	for _, item := range items {
-		context.logger.Debug("ForEach execution for %v", item)
 		context.store.Set(f.As, item)
 
 		for _, step := range f.Body {
@@ -50,8 +53,6 @@ func (f *ForEach) Execute(context *ExecutionContext) error {
 		}
 	}
 
-	context.store.Remove(f.As)
-
-	context.logger.Debug("Completed the execution of forEach step")
+	context.logger.Debug("successfully executed foreach step '%s'", f.Name)
 	return nil
 }

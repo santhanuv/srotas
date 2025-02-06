@@ -1,42 +1,52 @@
 package store
 
+import (
+	"log"
+	"maps"
+)
+
+// Store provides a dynamic storage mechanism for variables during config execution.
+// It allows setting and retrieving variables as needed throughout execution.
 type Store struct {
-	variables map[string]any
+	variables map[string]any // variables contained in the Store.
 }
 
-func NewStore(initialValues map[string]any) *Store {
+// NewStore initializes and returns a new [Store] with the given variables.
+func NewStore(ivars map[string]any) *Store {
 	variables := make(map[string]any)
 
-	if initialValues != nil {
-		for key, val := range initialValues {
-			variables[key] = val
-		}
-	}
+	maps.Copy(variables, ivars)
 
 	return &Store{
 		variables: variables,
 	}
 }
 
+// Add merges the given variables into the Store.
+// If a variable with the same name already exists, it will be overwritten.
 func (s *Store) Add(vars map[string]any) {
-	for vn, vv := range vars {
-		s.variables[vn] = vv
-	}
+	maps.Copy(s.variables, vars)
 }
 
-func (s *Store) Set(key string, value any) {
-	s.variables[key] = value
+// Set sets the variable in the Store with given name and value.
+// If a variable with the same name already exists, it will be overwritten.
+func (s *Store) Set(name string, value any) {
+	s.variables[name] = value
 }
 
-func (s *Store) Get(key string) (any, bool) {
-	val, ok := s.variables[key]
+// Get retrieves the value of the variable identified by the given name,
+// along with a boolean indicating whether the variable exists.
+func (s *Store) Get(name string) (any, bool) {
+	val, ok := s.variables[name]
 	return val, ok
 }
 
-func (s *Store) Remove(key string) {
-	delete(s.variables, key)
+// Remove removes the variable identified by the given name.
+func (s *Store) Remove(name string) {
+	delete(s.variables, name)
 }
 
-func (s *Store) ToMap() map[string]any {
+// Map returns a map of all variables, where the keys are variable names and the values are their respective values.
+func (s *Store) Map() map[string]any {
 	return s.variables
 }

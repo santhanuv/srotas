@@ -15,32 +15,29 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Request represents the HTTP request in the workflow step.
+// Request represents an HTTP request step in the execution flow.
 type Request struct {
-	Type        string
-	Name        string
-	Url         string
-	Method      string
-	Body        RequestBody `yaml:"body"`
-	Headers     Header
-	QueryParams QueryParam `yaml:"query_params"`
-	Store       map[string]string
-	Timeout     uint
-	Delay       uint
-	Validations Validator
+	Type        string            // The type of the step.
+	Name        string            // Identifier for the step.
+	Url         string            // The target URL for the request.
+	Method      string            // The HTTP method (e.g., GET, POST).
+	Body        RequestBody       `yaml:"body"` // Request payload.
+	Headers     Header            // Custom headers for the request.
+	QueryParams QueryParam        `yaml:"query_params"` // Query parameters to append to the URL.
+	Store       map[string]string // Variables mapped to expressions evaluated using the response.
+	Delay       uint              // Wait time (milliseconds) before executing the request.
+	Validations Validator         // Validation rules for the response.
 }
 
-// Execute executes the request with the given context.
+// Execute executes the step with the specified context.
 func (r *Request) Execute(context *ExecutionContext) error {
-	context.logger.Debug("Executing http step '%s'", r.Name)
-
 	req, err := r.build(context)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
 	}
 
-	context.logger.Info("Sending http request '%s': %s %s", r.Name, req.Method, req.Url)
-	context.logger.DebugJson(req.Body, "Http request body:")
+	context.logger.Info("sending http request '%s': %s %s", r.Name, req.Method, req.Url)
+	context.logger.DebugJson(req.Body, "http request: ")
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
 	if delayDuration > 0 {
@@ -50,11 +47,11 @@ func (r *Request) Execute(context *ExecutionContext) error {
 
 	res, err := context.httpClient.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
 	}
 
-	context.logger.Info("Http request '%s' responded with status %d", r.Name, res.StatusCode)
-	context.logger.DebugJson(res.Body, "Http response body:")
+	context.logger.Info("http request '%s' responded with status %d", r.Name, res.StatusCode)
+	context.logger.DebugJson(res.Body, "http response: ")
 
 	var pb any
 	err = json.Unmarshal(res.Body, &pb)
@@ -64,16 +61,15 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("http response parse error: %v", err)
+		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
 	}
 
 	err = resBody.store(r.Store, context)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
 	}
 
-	context.logger.Debug("Running validations on the http response")
 	err = r.Validations.Validate(context, res.StatusCode, &resBody)
 
 	if err != nil {
@@ -87,13 +83,13 @@ func (r *Request) Execute(context *ExecutionContext) error {
 		jres, je := json.MarshalIndent(fres, "", " ")
 
 		if je != nil {
-			return fmt.Errorf("unable to output response: %v", je)
+			return fmt.Errorf("http request '%s': unable to output response: %v", r.Name, je)
 		}
 
-		return fmt.Errorf("%v\nResponse: %s", err, string(jres))
+		return fmt.Errorf("%v\nresponse: %s", err, string(jres))
 	}
 
-	context.logger.Debug("Completed validating the http response")
+	context.logger.Debug("http response validation has been completed successfully.")
 
 	return nil
 }
@@ -140,7 +136,7 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 // buildURL combines baseUrl with r.Url and expands any URL parameters. If r.Url is already a fully qualified URL, it is returned as-is, just expanding url parameters.
 func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, error) {
 	if r.Url == "" {
-		return "", fmt.Errorf("invalid url '%s' for http request '%s'", r.Url, r.Name)
+		return "", fmt.Errorf("invalid url '%s'", r.Url)
 	}
 
 	store := context.store
@@ -151,7 +147,7 @@ func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, e
 
 		val, ok := store.Get(urlParam)
 		if !ok {
-			return "", fmt.Errorf("variable not found: url '%s': '%s'", urlParam, r.Url)
+			return "", fmt.Errorf("variable '%s' not found for url '%s'", urlParam, r.Url)
 		}
 
 		r.Url = strings.ReplaceAll(r.Url, fmt.Sprintf(":%s", urlParam), fmt.Sprintf("%v", val))
@@ -210,7 +206,7 @@ func (h *Header) UnmarshalYAML(value *yaml.Node) error {
 // compile returns the compiled headers after evaluating the value expressions of headers and also appends the global headers if any.
 func (h *Header) compile(context *ExecutionContext) (map[string][]string, error) {
 	gHeaders := context.globalOptions.headers
-	vars := context.store.ToMap()
+	vars := context.store.Map()
 
 	cHeaders := make(map[string][]string, len(*h)+len(gHeaders))
 	maps.Copy(cHeaders, gHeaders)
@@ -260,7 +256,7 @@ func (q *QueryParam) UnmarshalYAML(value *yaml.Node) error {
 // compile returns the compiled query parameters after evaluating the value expressions for each query parameter.
 func (q *QueryParam) compile(context *ExecutionContext) (map[string][]string, error) {
 	cqps := make(map[string][]string, len(*q))
-	vars := context.store.ToMap()
+	vars := context.store.Map()
 
 	for key, ves := range *q {
 		vals := make([]string, 0, len(ves))
@@ -289,10 +285,12 @@ func (q *QueryParam) compile(context *ExecutionContext) (map[string][]string, er
 	return cqps, nil
 }
 
-// RequestBody represents the body of the HTTP request in the workflow step.
+// RequestBody represents the payload for an HTTP request step.
+//   - Data is a map where keys represent JSON fields to update or add,
+//     and values are expressions evaluated at runtime before being inserted into the Content.
 type RequestBody struct {
-	Content []byte
-	Data    map[string]string
+	Content []byte            // Raw JSON payload.
+	Data    map[string]string // Dynamic fields evaluated and added/updated in Content.
 }
 
 func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
@@ -331,7 +329,7 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 
 // build builds the request body with rb.Content as the base and updates the field values after evaluating expressions in rb.Data.
 func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
-	vars := context.store.ToMap()
+	vars := context.store.Map()
 
 	var updatedContent []byte = rb.Content
 
@@ -352,8 +350,9 @@ func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 	return updatedContent, nil
 }
 
+// responseBody represents the response body obtained after executing the Request step.
 type responseBody struct {
-	body any `expr:"response"`
+	body any `expr:"response"` // The json response from executing HTTP request.
 }
 
 // store stores the new set of variables after evaluating the variable expressions in varExprs
@@ -366,7 +365,7 @@ func (rb *responseBody) store(varExprs map[string]string, context *ExecutionCont
 
 	newVars := make(map[string]any, len(varExprs))
 
-	vars := context.store.ToMap()
+	vars := context.store.Map()
 	vars["response"] = rb.body
 
 	for vn, ve := range varExprs {
@@ -384,18 +383,20 @@ func (rb *responseBody) store(varExprs map[string]string, context *ExecutionCont
 	return nil
 }
 
-// Validator is a data structure that represents the validations to the HTTP request.
+// Validator is a data structure that represents the validations for the HTTP response..
 type Validator struct {
-	Status_code *uint
-	Asserts     []Assert
+	Status_code *uint    // Expected status code for the http response.
+	Asserts     []Assert // Assert expr expressions on the response body.
 }
 
+// Validate validates the http response.
+// Returns an error if the validation is falied.
 func (v *Validator) Validate(context *ExecutionContext, statusCode uint, rb *responseBody) error {
 	if v.Status_code != nil && *v.Status_code != statusCode {
-		return fmt.Errorf("Status code: Expected %d but got %d", *v.Status_code, statusCode)
+		return fmt.Errorf("status code: expected '%d' but got '%d'", *v.Status_code, statusCode)
 	}
 
-	vars := context.store.ToMap()
+	vars := context.store.Map()
 	vars["response"] = rb.body
 
 	for _, assert := range v.Asserts {
@@ -409,9 +410,11 @@ func (v *Validator) Validate(context *ExecutionContext, statusCode uint, rb *res
 	return nil
 }
 
-// Assert represents an assertion where the Value represents the expected value and Selector represents the GJSON string that is used to extract the value from the JSON response.
+// Assert represents assertions for the http response. It should be a valid expr expression.
+// The http response and execution variables are available as environment for the expression evaluation.
 type Assert string
 
+// Validate runs the assertion expr expressions with the response and variables as the environment.
 func (a *Assert) Validate(vars map[string]any, rb *responseBody) error {
 	val, err := expr.Eval(string(*a), vars)
 

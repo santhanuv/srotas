@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	deflog "log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/expr-lang/expr"
+	"github.com/santhanuv/srotas/internal/http"
 	"github.com/santhanuv/srotas/internal/log"
 	"github.com/santhanuv/srotas/internal/store"
 	"github.com/santhanuv/srotas/workflow"
@@ -32,8 +32,19 @@ func init() {
 		"Defines a global variable in the format name=value, where the value is an expression. Variables must be unique; redefining an existing one results in an error.")
 }
 
+// output represents the output of the run command
 type output struct {
+	// Variables stores the values of the output field from the config.
+	// If output_all is set to true, it contains all variables from the execution.
 	Variables map[string]any
+}
+
+// runCommandEnv contains all the parsed values of the run command.
+type runCommandEnv struct {
+	config    string
+	debugMode bool
+	env       *workflow.PreExecEnv
+	pipedVars map[string]any
 }
 
 var runCommand = cobra.Command{
@@ -42,149 +53,163 @@ var runCommand = cobra.Command{
 	Long:  "Runs the provided configuration file. The configuration can be provided as a yaml file.",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// Config setup
-		configPath := args[0]
-		if configPath == "" {
-			deflog.Fatal("Config: Invalid configuration file")
-		}
+		logger := log.New(os.Stderr, io.Discard, os.Stderr)
 
-		configPath, err := filepath.Abs(configPath)
+		runCmdEnv, err := parseCommand(cmd, args)
 		if err != nil {
-			deflog.Fatalf("Config: %v", err)
-		}
-
-		// Verbose flag setup
-		isVerbose, err := cmd.Flags().GetBool("debug")
-		if err != nil {
-			deflog.Fatalf("verbose flag error: %v", err)
+			logger.Fatal("%v", err)
 		}
 
 		// Logger setup
-		logger := log.Logger{}
-		configureLogger(&logger, isVerbose, configPath)
-
-		// Piped Input
-		pVars, err := parsePipedOutput()
-
-		if err != nil {
-			logger.Fatal("parsing input error: %s", err)
+		logger.SetConfig(runCmdEnv.config)
+		if runCmdEnv.debugMode {
+			logger.SetDebugOutput(os.Stderr)
+			logger.SetDebugMode(true)
 		}
-
-		// Env setup
-		env := workflow.NewEnv(nil, nil)
-
-		envFlagVal, err := cmd.Flags().GetString("env")
-		if err != nil {
-			logger.Fatal("Env flag error: %s", err)
-		}
-
-		err = extractEnvFromString(env, envFlagVal)
-		if err != nil {
-			logger.Fatal("Env error: %s", args[0], err)
-		}
-
-		// Header flags
-		rfh, err := cmd.Flags().GetStringArray("header")
-		if err != nil {
-			logger.Fatal("Header flag error: %s", err)
-		}
-
-		fheaders, err := parseStringHeader(rfh)
-
-		if err != nil {
-			logger.Fatal("header flag error: %v", err)
-		}
-
-		// Vars flag
-		rv, err := cmd.Flags().GetStringArray("var")
-		if err != nil {
-			logger.Fatal("Var flag error: %s", err)
-		}
-
-		fVars := parseStringVars(rv)
 
 		// Parsing
-		logger.Debug("Parsing %s", configPath)
-
-		flowDef, err := workflow.ParseConfig(configPath, &logger)
+		def, err := workflow.ParseConfig(runCmdEnv.config, logger)
 		if err != nil {
-			logger.Fatal("Parse error: %v", err)
+			logger.Fatal("", err)
 		}
 
-		logger.Debug("Successfully parsed %s", configPath)
+		logger.Debug("successfully parsed config.")
 
 		// Context Initialization
-		logger.Debug("Initializing execution context")
-
-		if err := env.AppendVars(flowDef.Variables); err != nil {
-			logger.Fatal("config variable error: %v", err)
+		if err := runCmdEnv.env.AddVars(def.Variables); err != nil {
+			logger.Fatal("variable error: %v", err)
 		}
 
-		if err := env.AppendVars(fVars); err != nil {
-			logger.Fatal("flag variable error: %v", err)
-		}
+		runCmdEnv.env.AddHeaders(def.Headers)
 
-		env.AppendHeaders(flowDef.Headers)
-		env.AppendHeaders(fheaders)
-
-		variables, headers, err := env.Compile(pVars)
+		variables, headers, err := runCmdEnv.env.Compile(runCmdEnv.pipedVars)
 
 		if err != nil {
-			logger.Fatal("env compile error: %s", err)
+			logger.Fatal("failed to initialize config for execution: %v", err)
 		}
 
-		var s *store.Store
+		var s *store.Store = store.NewStore(runCmdEnv.pipedVars)
 
 		if variables != nil {
-			s = store.NewStore(variables)
-
-			if pVars != nil {
-				s.Add(pVars)
-			}
+			s.Add(variables)
 		}
 
+		httpClient := http.NewClient(1500)
+
 		execCtx, err := workflow.NewExecutionContext(
-			workflow.WithGlobalOptions(flowDef.BaseUrl, headers),
-			workflow.WithLogger(&logger),
+			workflow.WithHttpClient(httpClient),
+			workflow.WithGlobalOptions(def.BaseUrl, headers),
+			workflow.WithLogger(logger),
 			workflow.WithStore(s))
 
 		if err != nil {
-			logger.Fatal("Execution context error: %v", err)
+			logger.Fatal("failed to initialize config for execution: %v", err)
 		}
 
-		logger.Debug("Successfully initialized execution context")
+		logger.Debug("successfully initialized config for execution.")
 
 		// Execution
-		logger.Debug("Executing configuration")
-
-		err = workflow.Execute(flowDef, execCtx)
+		err = workflow.Execute(def, execCtx)
 		if err != nil {
-			logger.Fatal("Execution error: %v", err)
+			logger.Fatal("failed to execute config: %v", err)
 		}
 
-		logger.Debug("Successfully executed configuration")
+		logger.Debug("successfully executed configuration")
 
 		// Output updated variables
-		if flowDef.OutputAll || flowDef.Output != nil {
-			logger.Debug("Output is being send to stdout")
-			outJson, err := writeOutput(flowDef.Output, execCtx, flowDef.OutputAll)
+		if def.OutputAll || def.Output != nil {
+			logger.Debug("output is being send to stdout")
+			outJson, err := compileOutput(def.Output, execCtx.Variables(), def.OutputAll)
 
 			if err != nil {
-				logger.Fatal("failed to encode output as json: %s", err)
+				logger.Fatal("failed to encode output as json: %v", err)
 			}
 
 			_, err = os.Stdout.Write(outJson)
 
 			if err != nil {
-				logger.Fatal("output write error: %s")
+				logger.Fatal("failed to write outpus: %v")
 			}
-
-			logger.DebugJson(outJson, "Output:")
 		}
+
+		logger.Debug("completed execution.")
 	},
 }
 
-func parsePipedOutput() (map[string]any, error) {
+// parseCommand extracts flags and arguments from the command line and returns a runCommandEnv instance with the parsed details.
+func parseCommand(cmd *cobra.Command, args []string) (*runCommandEnv, error) {
+	// Config setup
+	configPath := args[0]
+	if configPath == "" {
+		return nil, fmt.Errorf("config file is required. Please provide a valid YAML config file. Use --help for more information.")
+	}
+
+	configPath, err := filepath.Abs(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("invalid config: %v", err)
+	}
+
+	// Verbose flag setup
+	debugMode, err := cmd.Flags().GetBool("debug")
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'debug': %v", err)
+	}
+
+	// Piped Input from stdin
+	pVars, err := parsePipedInput()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to process input: %v", err)
+	}
+
+	// Env setup
+	env := workflow.NewPreExecEnv(nil, nil)
+
+	efv, err := cmd.Flags().GetString("env")
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'env': %v", err)
+	}
+
+	err = extractEnvFromString(env, efv)
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'env': %v", err)
+	}
+
+	// Header flags
+	fhs, err := cmd.Flags().GetStringArray("header")
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'header': %v", err)
+	}
+
+	fHeaders, err := parseStringHeaders(fhs)
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'header': %v", err)
+	}
+
+	// Vars flag
+	fvs, err := cmd.Flags().GetStringArray("var")
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'var': %v", err)
+	}
+
+	fVars, err := parseStringVars(fvs)
+	if err != nil {
+		return nil, fmt.Errorf("invalid value for 'var': %v", err)
+	}
+
+	env.AddVars(fVars)
+	env.AddHeaders(fHeaders)
+
+	return &runCommandEnv{
+		debugMode: debugMode,
+		config:    configPath,
+		env:       env,
+		pipedVars: pVars,
+	}, nil
+}
+
+// parsePipedInput reads and parses piped stdin input, returning extracted variables.
+func parsePipedInput() (map[string]any, error) {
 	fileInfo, err := os.Stdin.Stat()
 
 	if err != nil {
@@ -216,7 +241,8 @@ func parsePipedOutput() (map[string]any, error) {
 	return output.Variables, nil
 }
 
-func extractEnvFromString(env *workflow.Env, source string) error {
+// extractEnvFromString parses the source string, extracts variables and headers, and appends them to the given env.
+func extractEnvFromString(env *workflow.PreExecEnv, source string) error {
 	if source == "" {
 		return nil
 	}
@@ -232,19 +258,19 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 			return err
 		}
 
-		err = env.AppendVars(rawEnv.Variables)
+		err = env.AddVars(rawEnv.Variables)
 
 		if err != nil {
 			return err
 		}
 
-		env.AppendHeaders(rawEnv.Headers)
+		env.AddHeaders(rawEnv.Headers)
 
 		return nil
 	}
 
 	if strings.HasPrefix(source, "{") {
-		return fmt.Errorf("env flag: invalid json.")
+		return fmt.Errorf("invalid json: %v", source)
 	}
 
 	data, err := os.ReadFile(source)
@@ -259,43 +285,31 @@ func extractEnvFromString(env *workflow.Env, source string) error {
 		return err
 	}
 
-	err = env.AppendVars(rawEnv.Variables)
+	err = env.AddVars(rawEnv.Variables)
 
 	if err != nil {
 		return err
 	}
 
-	env.AppendHeaders(rawEnv.Headers)
+	env.AddHeaders(rawEnv.Headers)
 
 	return nil
 }
 
-func configureLogger(logger *log.Logger, isVerbose bool, configFileName string) {
-	logger.SetForConfigFile(configFileName)
-	logger.SetInfoWriter(os.Stderr)
-	logger.SetErrorWriter(os.Stderr)
-
-	if isVerbose {
-		logger.SetDebugWriter(os.Stderr)
-	} else {
-		logger.SetDebugWriter(io.Discard)
-	}
-}
-
-func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll bool) ([]byte, error) {
-	if ves == nil && !outputAll {
+// compileOutput evaluates expressions in out using vars as the environment and returns a JSON representation of the output.
+// If outputAll is true, all variables will be included in the output.
+func compileOutput(out map[string]string, vars map[string]any, outputAll bool) ([]byte, error) {
+	if out == nil && !outputAll {
 		return nil, fmt.Errorf("output error: please ensure output field exists")
 	}
-
-	vars := ec.Variables()
 
 	var oVars map[string]any
 
 	if outputAll {
 		oVars = vars
 	} else {
-		oVars = make(map[string]any, len(ves))
-		for vn, ve := range ves {
+		oVars = make(map[string]any, len(out))
+		for vn, ve := range out {
 			val, err := expr.Eval(ve, vars)
 
 			if err != nil {
@@ -306,11 +320,11 @@ func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll
 		}
 	}
 
-	out := output{
+	output := output{
 		Variables: oVars,
 	}
 
-	outJson, err := json.MarshalIndent(out, "", " ")
+	outJson, err := json.MarshalIndent(output, "", " ")
 
 	if err != nil {
 		return nil, err
@@ -319,13 +333,14 @@ func writeOutput(ves map[string]string, ec *workflow.ExecutionContext, outputAll
 	return outJson, nil
 }
 
-func parseStringHeader(headers []string) (map[string][]string, error) {
+// parseStringHeaders parses a slice of headers which are "key:value" formatted strings and returns a map containing multivalued key-pairs
+func parseStringHeaders(headers []string) (map[string][]string, error) {
 	hm := map[string][]string{}
 	for _, header := range headers {
 		kvp := strings.Split(header, ":")
 
 		if len(kvp) != 2 {
-			return nil, fmt.Errorf("header should be in the form 'key:val'")
+			return nil, fmt.Errorf("header must be in the format 'key:value'")
 		}
 
 		k, v := strings.TrimSpace(kvp[0]), strings.TrimSpace(kvp[1])
@@ -339,13 +354,19 @@ func parseStringHeader(headers []string) (map[string][]string, error) {
 	return hm, nil
 }
 
-func parseStringVars(vars []string) map[string]string {
+// parseStringVars parses a slice of variable which are "key=value" formatted strings and returns a map containing key-value pairs.
+func parseStringVars(vars []string) (map[string]string, error) {
 	vm := map[string]string{}
 	for _, variable := range vars {
 		kvp := strings.Split(variable, "=")
+
+		if len(kvp) != 2 {
+			return nil, fmt.Errorf("variable must be in the format 'key=value'")
+		}
+
 		k, v := kvp[0], kvp[1]
 		vm[k] = v
 	}
 
-	return vm
+	return vm, nil
 }

@@ -60,7 +60,7 @@ var httpCommand = cobra.Command{
 			log.Fatalf("body: %v", err)
 		}
 
-		c := http.NewClient(0)
+		c := http.NewClient(0, nil)
 		req := &http.Request{
 			Method:      method,
 			Url:         rawURL,

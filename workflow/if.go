@@ -7,21 +7,24 @@ import (
 	"github.com/expr-lang/expr/vm"
 )
 
-// If step executes the sequence of steps in Then field when the Condition evaluates to true; otherwise runs the sequence of steps in Else, if provided
+// If represents a conditional step that executes Then steps when Condition evaluates to true;
+// otherwise, it executes Else steps if provided.
 type If struct {
-	Type       string
-	Name       string
-	Condition  string
-	cCondition *vm.Program
-	Then       StepList
-	Else       StepList
+	Type       string      // The type of the step.
+	Name       string      // Identifier for the step.
+	Condition  string      // Expression that determines which branch to execute.
+	cCondition *vm.Program // Precompiled condition expression.
+	Then       StepList    // Steps to execute if Condition is true.
+	Else       StepList    // Steps to execute if Condition is false.
 }
 
+// Execute executes the step with the specified context.
 func (i *If) Execute(context *ExecutionContext) error {
-	variables := context.store.ToMap()
+	variables := context.store.Map()
+
 	if i.cCondition == nil {
 		if i.Condition == "" {
-			return fmt.Errorf("If step: condition is mandatory")
+			return fmt.Errorf("if step '%s': condition is mandatory", i.Name)
 		}
 
 		program, err := expr.Compile(i.Condition, expr.Env(variables), expr.AsBool())
@@ -49,10 +52,6 @@ func (i *If) Execute(context *ExecutionContext) error {
 		executionSteps = i.Else
 	}
 
-	if executionSteps == nil {
-		context.logger.Info("Skipping conditional %s", i.Name)
-	}
-
 	for _, step := range executionSteps {
 		err := step.Execute(context)
 
@@ -60,6 +59,8 @@ func (i *If) Execute(context *ExecutionContext) error {
 			return err
 		}
 	}
+
+	context.logger.Debug("successfully completed the execution of if step '%s'.", i.Name)
 
 	return nil
 }

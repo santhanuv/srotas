@@ -7,32 +7,43 @@ import (
 	"github.com/expr-lang/expr/vm"
 )
 
+// While represents a loop that executes the steps in Body while the Condition evaluates to true.
+// Init defines the initial variables for the loop.
+// Update specifies variable expressions that are updated after each iteration.
 type While struct {
-	Type       string
-	Name       string
-	Init       map[string]any
-	Condition  string
-	Update     map[string]string
-	cCondition *vm.Program
-	cUpdation  map[string]*vm.Program
-	Body       StepList
+	Type       string                 // The type of the step.
+	Name       string                 // Identifier for the step.
+	Init       map[string]any         // Initial variables for the loop.
+	Condition  string                 // Expr conditional expression for the loop.
+	Update     map[string]string      // Variable expressions to update after each iteration.
+	cCondition *vm.Program            // Compiled condition.
+	cUpdation  map[string]*vm.Program // Compiled update expressions.
+	Body       StepList               // Steps to execute in each iteration.
 }
 
+// Execute executes the step with the specified context.
 func (w *While) Execute(context *ExecutionContext) error {
-	variables := context.store.ToMap()
+	variables := context.store.Map()
 
 	for key, val := range w.Init {
 		if _, ok := variables[key]; ok {
-			return fmt.Errorf("While step: initialization error: key '%s' already exists in context", key)
+			return fmt.Errorf("while step '%s': variable '%s' already defined", w.Name, key)
 		}
 
 		variables[key] = val
 	}
 
+	defer func() {
+		for name := range w.Init {
+			context.store.Remove(name)
+		}
+	}()
+
 	if w.cCondition == nil {
 		if w.Condition == "" {
-			return fmt.Errorf("While step: condition is mandatory")
+			return fmt.Errorf("while step '%s': condition is mandatory", w.Name)
 		}
+
 		program, err := expr.Compile(w.Condition, expr.Env(variables), expr.AsBool())
 
 		if err != nil {
@@ -46,7 +57,7 @@ func (w *While) Execute(context *ExecutionContext) error {
 		w.cUpdation = make(map[string]*vm.Program, len(w.Update))
 
 		if w.Update == nil {
-			context.logger.Error("While step: no loop updatation is set")
+			context.logger.Error("while step '%s': no loop updatation is set", w.Name)
 		}
 
 		for key, uExpr := range w.Update {
@@ -70,11 +81,9 @@ func (w *While) Execute(context *ExecutionContext) error {
 		ok := output.(bool)
 
 		if !ok {
-			context.logger.Debug("Exiting loop as condition is evaluated to false")
 			break
 		}
 
-		context.logger.Debug("Executing while step '%s'", w.Name)
 		for _, step := range w.Body {
 			err := step.Execute(context)
 
@@ -91,7 +100,6 @@ func (w *While) Execute(context *ExecutionContext) error {
 			}
 
 			variables[key] = output
-			context.logger.Debug("variable '%s' updated to '%v'", key, output)
 		}
 	}
 
