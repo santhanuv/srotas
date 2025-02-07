@@ -64,6 +64,9 @@ func (r *Request) Execute(context *ExecutionContext) error {
 		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
 	}
 
+	context.store.Set("response", resBody.body)
+	defer context.store.Remove("response")
+
 	err = resBody.store(r.Store, context)
 
 	if err != nil {
@@ -366,9 +369,6 @@ func (rb *responseBody) store(varExprs map[string]string, context *ExecutionCont
 	newVars := make(map[string]any, len(varExprs))
 
 	vars := context.store.Map()
-	vars["response"] = rb.body
-
-	defer context.store.Remove("response")
 
 	for vn, ve := range varExprs {
 		val, err := expr.Eval(ve, vars)
