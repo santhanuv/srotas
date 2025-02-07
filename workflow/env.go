@@ -31,12 +31,18 @@ func (e *PreExecEnv) AddVars(exprs ...map[string]string) error {
 // AddHeaders merges the given headers into the PreExecutionEnv.
 // Each key-value pair represents a header name and its corresponding expr expressions.
 // Headers with the same name will have their values appended.
-func (e *PreExecEnv) AddHeaders(exprs ...map[string][]string) {
+func (e *PreExecEnv) AddHeaders(exprs ...map[string][]string) error {
 	for _, headers := range exprs {
 		for key, val := range headers {
-			e.headerExprs[key] = append(e.headerExprs[key], val...)
+			if _, ok := e.headerExprs[key]; ok {
+				return fmt.Errorf("header '%s' is already defined", key)
+			}
+
+			e.headerExprs[key] = val
 		}
 	}
+
+	return nil
 }
 
 // Compile evaluates the variable and header expressions using the provided vars as the evaluation environment.

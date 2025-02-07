@@ -98,6 +98,8 @@ func (r *Request) Execute(context *ExecutionContext) error {
 }
 
 // build returns a custom http request after evaluating all value expressions.
+// Builds full URL using the base_url and the r.Url.
+// r.Headers and r.QueryParams are also compiled.
 func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 	body, err := r.Body.build(context)
 
@@ -207,6 +209,7 @@ func (h *Header) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // compile returns the compiled headers after evaluating the value expressions of headers and also appends the global headers if any.
+// h headers are preferred over global headers.
 func (h *Header) compile(context *ExecutionContext) (map[string][]string, error) {
 	gHeaders := context.globalOptions.headers
 	vars := context.store.Map()

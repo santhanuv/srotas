@@ -77,10 +77,12 @@ var runCommand = cobra.Command{
 
 		// Context Initialization
 		if err := runCmdEnv.env.AddVars(def.Variables); err != nil {
-			logger.Fatal("variable error: %v", err)
+			logger.Fatal("config predefined variable error: %v", err)
 		}
 
-		runCmdEnv.env.AddHeaders(def.Headers)
+		if err := runCmdEnv.env.AddHeaders(def.Headers); err != nil {
+			logger.Fatal("config global header error: %v", err)
+		}
 
 		variables, headers, err := runCmdEnv.env.Compile(runCmdEnv.pipedVars)
 
@@ -197,8 +199,13 @@ func parseCommand(cmd *cobra.Command, args []string) (*runCommandEnv, error) {
 		return nil, fmt.Errorf("invalid value for 'var': %v", err)
 	}
 
-	env.AddVars(fVars)
-	env.AddHeaders(fHeaders)
+	if err := env.AddVars(fVars); err != nil {
+		return nil, err
+	}
+
+	if err := env.AddHeaders(fHeaders); err != nil {
+		return nil, err
+	}
 
 	return &runCommandEnv{
 		debugMode: debugMode,
@@ -253,18 +260,17 @@ func extractEnvFromString(env *workflow.PreExecEnv, source string) error {
 	}
 
 	if json.Valid([]byte(source)) {
-		err := json.Unmarshal([]byte(source), &rawEnv)
-		if err != nil {
+		if err := json.Unmarshal([]byte(source), &rawEnv); err != nil {
 			return err
 		}
 
-		err = env.AddVars(rawEnv.Variables)
-
-		if err != nil {
+		if err := env.AddVars(rawEnv.Variables); err != nil {
 			return err
 		}
 
-		env.AddHeaders(rawEnv.Headers)
+		if err := env.AddHeaders(rawEnv.Headers); err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -286,12 +292,14 @@ func extractEnvFromString(env *workflow.PreExecEnv, source string) error {
 	}
 
 	err = env.AddVars(rawEnv.Variables)
-
 	if err != nil {
 		return err
 	}
 
-	env.AddHeaders(rawEnv.Headers)
+	err = env.AddHeaders(rawEnv.Headers)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
