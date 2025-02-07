@@ -368,6 +368,8 @@ func (rb *responseBody) store(varExprs map[string]string, context *ExecutionCont
 	vars := context.store.Map()
 	vars["response"] = rb.body
 
+	defer context.store.Remove("response")
+
 	for vn, ve := range varExprs {
 		val, err := expr.Eval(ve, vars)
 
