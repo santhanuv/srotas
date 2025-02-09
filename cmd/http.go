@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,55 +13,68 @@ import (
 
 func init() {
 	rootCmd.AddCommand(&httpCommand)
-	httpCommand.Flags().StringSliceP("query", "q", []string{}, "Specify query parameters seperated by comma if any")
-	httpCommand.Flags().StringSliceP("headers", "H", []string{}, "Specify headers seperated by comma if any")
-	httpCommand.Flags().StringP("body", "B", "", "Optionally specify the data to be send with request as the request body. When specifying body Content-Type header should be set, otherwise it is send as text/plain. Currently only json is supported")
+
+	httpCommand.Flags().StringArrayP("query", "Q", []string{},
+		"Define query parameters as 'key=value'. Multiple parameters can be specified using commas.")
+
+	httpCommand.Flags().StringArrayP("header", "H", []string{},
+		"Add request headers in 'key:value' format. Multiple headers can be specified using commas.")
+
+	httpCommand.Flags().StringP("body", "B", "",
+		"Provide a request body. Only JSON is supported.")
 }
 
 var httpCommand = cobra.Command{
+
 	Use:   "http [METHOD] [URL]",
-	Short: "Sends http METHOD request to the specified URL",
-	Long: `Sends http METHOD request to the specified URL:
-	METHOD can be any http request methods like GET, POST, PUT, DELETE,... .
-	
-	URL specifies the url to send request to.
-	`,
+	Short: "Send an HTTP request to a specified URL.",
+	Long: `Send an HTTP request using the specified METHOD:
+
+	- METHOD: The HTTP method to use (GET, POST, PUT, DELETE, etc.).
+	- URL: The target URL for the request.
+		
+Optional flags allow you to add query parameters, headers, and a request body.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		method, rawURL := args[0], args[1]
 		method = strings.ToUpper(method)
 
-		rawQueryParams, err := cmd.Flags().GetStringSlice("query")
+		rawQueryParams, err := cmd.Flags().GetStringArray("query")
 
 		if err != nil {
-			log.Fatalf("query param: %v", err)
+			log.Fatalf("error on parsing query params: %v", err)
 		}
 
 		queryParams, err := parseQueryParams(rawQueryParams)
 
 		if err != nil {
-			log.Fatalf("query param: %v", err)
+			log.Fatalf("error on parsing query params: %v", err)
 		}
 
-		rawHeaders, err := cmd.Flags().GetStringSlice("headers")
+		rawHeaders, err := cmd.Flags().GetStringArray("header")
 
 		if err != nil {
-			log.Fatalf("header: %v", err)
+			log.Fatalf("error on parsing headers: %v", err)
 		}
 
 		headers, err := parseHeaders(rawHeaders)
 
+		if _, ok := headers["Content-Type"]; !ok {
+			headers["Content-Type"] = []string{"application/json"}
+		}
+
 		if err != nil {
-			log.Fatalf("header: %v", err)
+			log.Fatalf("error on parsing header: %v", err)
 		}
 
 		rawRequestBody, err := cmd.Flags().GetString("body")
 
 		if err != nil {
-			log.Fatalf("body: %v", err)
+			log.Fatalf("error on parsing request body: %v", err)
 		}
 
-		c := http.NewClient(0, nil)
+		c := http.NewClient(0)
+
 		req := &http.Request{
 			Method:      method,
 			Url:         rawURL,
@@ -72,16 +86,16 @@ var httpCommand = cobra.Command{
 		res, err := c.Do(req)
 
 		if err != nil {
-			log.Fatalf("%s", err)
+			log.Fatalf("sending http request failed: %v", err)
 		}
 
-		responseJson, err := json.Marshal(*res)
-
+		var responseJson bytes.Buffer
+		json.Indent(&responseJson, res.Body, "", " ")
 		if err != nil {
-			log.Fatalf("%s", err)
+			log.Fatalf("failed to parse response: %s", err)
 		}
 
-		fmt.Println(string(responseJson))
+		log.Printf("Response:\n%s", responseJson.String())
 	},
 }
 
