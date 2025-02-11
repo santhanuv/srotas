@@ -103,5 +103,5 @@ func (l *Logger) DebugJson(v []byte, prefix string, args ...any) {
 	var buf bytes.Buffer
 	json.Indent(&buf, v, "", " ")
 
-	l.Debug("%s: %s\n%s", l.configName, prefix, buf.String())
+	l.Debug("%s\n%s", prefix, buf.String())
 }
