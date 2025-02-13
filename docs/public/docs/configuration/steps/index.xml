@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Srotas – Steps</title>
-    <link>/docs/configuration/steps/</link>
+    <link>//localhost:1313/docs/configuration/steps/</link>
     <description>Recent content in Steps on Srotas</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 07 Feb 2025 18:33:09 +0530</lastBuildDate>
     
-	  <atom:link href="/docs/configuration/steps/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="//localhost:1313/docs/configuration/steps/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>HTTP Request</title>
-      <link>/docs/configuration/steps/http/</link>
+      <link>//localhost:1313/docs/configuration/steps/http/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:34 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/http/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/http/</guid>
       <description>
         
         
@@ -231,10 +231,10 @@ Inline request body template. If provided, this is used instead of the file.&lt;
     
     <item>
       <title>If</title>
-      <link>/docs/configuration/steps/if/</link>
+      <link>//localhost:1313/docs/configuration/steps/if/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:17 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/if/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/if/</guid>
       <description>
         
         
@@ -322,10 +322,10 @@ Conditional steps allow branching logic based on evaluated expressions. The &lt;
     
     <item>
       <title>Foreach</title>
-      <link>/docs/configuration/steps/foreach/</link>
+      <link>//localhost:1313/docs/configuration/steps/foreach/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:29 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/foreach/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/foreach/</guid>
       <description>
         
         
@@ -412,10 +412,10 @@ ForEach steps iterate over a dynamically generated list and execute a set of ste
     
     <item>
       <title>While</title>
-      <link>/docs/configuration/steps/while/</link>
+      <link>//localhost:1313/docs/configuration/steps/while/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:25 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/while/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/while/</guid>
       <description>
         
         

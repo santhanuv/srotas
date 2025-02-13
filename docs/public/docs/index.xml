@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Srotas – Docs</title>
-    <link>/docs/</link>
+    <link>//localhost:1313/docs/</link>
     <description>Recent content in Docs on Srotas</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 07 Feb 2025 18:16:50 +0530</lastBuildDate>
     
-	  <atom:link href="/docs/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="//localhost:1313/docs/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Getting Started</title>
-      <link>/docs/getting-started/</link>
+      <link>//localhost:1313/docs/getting-started/</link>
       <pubDate>Fri, 07 Feb 2025 18:34:14 +0530</pubDate>
       
-      <guid>/docs/getting-started/</guid>
+      <guid>//localhost:1313/docs/getting-started/</guid>
       <description>
         
         
@@ -116,17 +116,17 @@
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;p&gt;This allows the output of the first configuration to be used as static variables in the second.&lt;/p&gt;
-&lt;p&gt;For more advanced usage, check out the &lt;a href=&#34;/docs/usage/&#34; &gt;Detailed Usage Guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more advanced usage, check out the &lt;a href=&#34;//localhost:1313/docs/usage/&#34; &gt;Detailed Usage Guide&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
     
     <item>
       <title>HTTP Request</title>
-      <link>/docs/configuration/steps/http/</link>
+      <link>//localhost:1313/docs/configuration/steps/http/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:34 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/http/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/http/</guid>
       <description>
         
         
@@ -337,10 +337,10 @@ Inline request body template. If provided, this is used instead of the file.&lt;
     
     <item>
       <title>Global Fields</title>
-      <link>/docs/configuration/global-fields/</link>
+      <link>//localhost:1313/docs/configuration/global-fields/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:40 +0530</pubDate>
       
-      <guid>/docs/configuration/global-fields/</guid>
+      <guid>//localhost:1313/docs/configuration/global-fields/</guid>
       <description>
         
         
@@ -468,7 +468,7 @@ The base URL provides a common prefix for all HTTP requests in the configuration
 &lt;p&gt;&lt;strong&gt;Description&lt;/strong&gt;&lt;br&gt;
 Global headers are applied to every HTTP request in the configuration. Each header is defined as a key-value pair, where the key is the header name, and the value is an &lt;strong&gt;expr&lt;/strong&gt; expression. This allows headers to be dynamically generated using static variables or values.&lt;/p&gt;
 &lt;p&gt;If an HTTP step defines the same header as a global header, the HTTP step header takes precedence.&lt;/p&gt;
-&lt;p&gt;Global headers can also be set using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--header&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;/docs/usage/run-command/#headers&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
+&lt;p&gt;Global headers can also be set using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--header&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;//localhost:1313/docs/usage/run-command/#headers&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
 
@@ -523,10 +523,10 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
     
     <item>
       <title>If</title>
-      <link>/docs/configuration/steps/if/</link>
+      <link>//localhost:1313/docs/configuration/steps/if/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:17 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/if/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/if/</guid>
       <description>
         
         
@@ -614,10 +614,10 @@ Conditional steps allow branching logic based on evaluated expressions. The &lt;
     
     <item>
       <title>Variables</title>
-      <link>/docs/configuration/variables/</link>
+      <link>//localhost:1313/docs/configuration/variables/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:50 +0530</pubDate>
       
-      <guid>/docs/configuration/variables/</guid>
+      <guid>//localhost:1313/docs/configuration/variables/</guid>
       <description>
         
         
@@ -658,7 +658,7 @@ Conditional steps allow branching logic based on evaluated expressions. The &lt;
       &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;Static varibles can also be defined using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--var&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;/docs/usage/run-command/#variables&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
+&lt;p&gt;Static varibles can also be defined using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--var&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;//localhost:1313/docs/usage/run-command/#variables&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-red-200 hx-bg-red-100 hx-text-red-900 dark:hx-border-red-200/30 dark:hx-bg-red-900/30 dark:hx-text-red-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z&#34;/&gt;&lt;/svg&gt;Caution&lt;/p&gt;
 
@@ -667,7 +667,7 @@ Conditional steps allow branching logic based on evaluated expressions. The &lt;
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;h3&gt;Dynamic Variables&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;dynamic-variables&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#dynamic-variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Dynamic variables are created and updated as the configuration runs, allowing data to be stored and passed between steps. They can reference other variables and are typically set within different &lt;a href=&#34;/docs/configuration/steps/&#34; &gt;steps&lt;/a&gt;.&lt;/p&gt;
+    &lt;a href=&#34;#dynamic-variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Dynamic variables are created and updated as the configuration runs, allowing data to be stored and passed between steps. They can reference other variables and are typically set within different &lt;a href=&#34;//localhost:1313/docs/configuration/steps/&#34; &gt;steps&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;These variables are mostly created using the &lt;code&gt;store&lt;/code&gt; field of an &lt;code&gt;HTTP&lt;/code&gt; step and are globally available. Additionally, variables created in the &lt;code&gt;update&lt;/code&gt; field of a &lt;code&gt;while&lt;/code&gt; step, if they are not part of the &lt;code&gt;init&lt;/code&gt; field, also persist globally, but is not recommended.&lt;/p&gt;
 &lt;p&gt;However, variables created in other step-specific fields, such as the &lt;code&gt;init&lt;/code&gt; field of a &lt;code&gt;while&lt;/code&gt; step or the &lt;code&gt;as&lt;/code&gt; field of a &lt;code&gt;forEach&lt;/code&gt; step, are only available within the scope of that step and do not persist globally.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
@@ -683,10 +683,10 @@ Conditional steps allow branching logic based on evaluated expressions. The &lt;
     
     <item>
       <title>Foreach</title>
-      <link>/docs/configuration/steps/foreach/</link>
+      <link>//localhost:1313/docs/configuration/steps/foreach/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:29 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/foreach/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/foreach/</guid>
       <description>
         
         
@@ -773,10 +773,10 @@ ForEach steps iterate over a dynamically generated list and execute a set of ste
     
     <item>
       <title>While</title>
-      <link>/docs/configuration/steps/while/</link>
+      <link>//localhost:1313/docs/configuration/steps/while/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:25 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/while/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/while/</guid>
       <description>
         
         
@@ -880,10 +880,10 @@ While steps repeatedly execute a set of steps until a condition evaluates to fal
     
     <item>
       <title>Output</title>
-      <link>/docs/configuration/output/</link>
+      <link>//localhost:1313/docs/configuration/output/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:54 +0530</pubDate>
       
-      <guid>/docs/configuration/output/</guid>
+      <guid>//localhost:1313/docs/configuration/output/</guid>
       <description>
         
         
@@ -950,10 +950,10 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
     
     <item>
       <title>Examples</title>
-      <link>/docs/examples/</link>
+      <link>//localhost:1313/docs/examples/</link>
       <pubDate>Sat, 08 Feb 2025 03:10:19 +0530</pubDate>
       
-      <guid>/docs/examples/</guid>
+      <guid>//localhost:1313/docs/examples/</guid>
       <description>
         
         
@@ -1093,10 +1093,10 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
     
     <item>
       <title>Send Http Request</title>
-      <link>/docs/usage/http-req-command/</link>
+      <link>//localhost:1313/docs/usage/http-req-command/</link>
       <pubDate>Sat, 08 Feb 2025 02:44:43 +0530</pubDate>
       
-      <guid>/docs/usage/http-req-command/</guid>
+      <guid>//localhost:1313/docs/usage/http-req-command/</guid>
       <description>
         
         
@@ -1298,10 +1298,10 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
     
     <item>
       <title>Running a Configuration</title>
-      <link>/docs/usage/run-command/</link>
+      <link>//localhost:1313/docs/usage/run-command/</link>
       <pubDate>Fri, 07 Feb 2025 18:34:14 +0530</pubDate>
       
-      <guid>/docs/usage/run-command/</guid>
+      <guid>//localhost:1313/docs/usage/run-command/</guid>
       <description>
         
         
@@ -1320,7 +1320,7 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;p&gt;&lt;code&gt;config&lt;/code&gt;: The path to the yaml configuration file.&lt;/p&gt;
-&lt;p&gt;For more details on configuring Srotas, check out the &lt;a href=&#34;/docs/configuration/&#34; &gt;Configuration&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details on configuring Srotas, check out the &lt;a href=&#34;//localhost:1313/docs/configuration/&#34; &gt;Configuration&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For a complete list of available flags and usage details, run:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
@@ -1469,7 +1469,7 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Duplicate variable and header names will result in an error.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/variables/&#34; &gt;global fields&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/variables/&#34; &gt;global fields&lt;/a&gt;.&lt;/p&gt;
 &lt;h3&gt;Headers&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;headers&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#headers&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The &lt;code&gt;--header&lt;/code&gt; flag is used to define global headers dynamically when running a Srotas configuration. Headers specified using this flag override any global headers defined in the configuration file.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Usage&lt;/strong&gt;&lt;/p&gt;
@@ -1552,7 +1552,7 @@ The &lt;code&gt;output&lt;/code&gt; section defines the final result of the conf
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Headers specified using &lt;code&gt;--header&lt;/code&gt; take precedence over those defined in &lt;code&gt;--env&lt;/code&gt; and the configuration file.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/global-fields/#global-headers&#34; &gt;global headers&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/global-fields/#global-headers&#34; &gt;global headers&lt;/a&gt;.&lt;/p&gt;
 &lt;h3&gt;Variables&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;variables&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The &lt;code&gt;--var&lt;/code&gt; flag in Srotas allows users to define global variables directly through the command line. It is useful for setting static values that can be referenced within the configuration file.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Usage&lt;/strong&gt;&lt;/p&gt;
@@ -1627,7 +1627,7 @@ Each &lt;code&gt;--var&lt;/code&gt; flag must follow the format:&lt;/p&gt;
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;If a duplicate variable name is detected, Srotas will return an error.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/variables/#static-variables&#34; &gt;variables&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/variables/#static-variables&#34; &gt;variables&lt;/a&gt;.&lt;/p&gt;
 &lt;h2&gt;Chaining Configurations&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;chaining-configurations&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#chaining-configurations&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Srotas supports piping output between executions:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
@@ -1642,7 +1642,7 @@ Each &lt;code&gt;--var&lt;/code&gt; flag must follow the format:&lt;/p&gt;
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;This transfers the execution context from the first configuration to the second. Only the specified &lt;a href=&#34;/docs/configuration/output/&#34; &gt;output&lt;/a&gt; will be transfered.&lt;/p&gt;
+&lt;p&gt;This transfers the execution context from the first configuration to the second. Only the specified &lt;a href=&#34;//localhost:1313/docs/configuration/output/&#34; &gt;output&lt;/a&gt; will be transfered.&lt;/p&gt;
 
       </description>
     </item>

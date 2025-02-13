@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Srotas – Configuration</title>
-    <link>/docs/configuration/</link>
+    <link>//localhost:1313/docs/configuration/</link>
     <description>Recent content in Configuration on Srotas</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 07 Feb 2025 18:31:42 +0530</lastBuildDate>
     
-	  <atom:link href="/docs/configuration/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="//localhost:1313/docs/configuration/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Global Fields</title>
-      <link>/docs/configuration/global-fields/</link>
+      <link>//localhost:1313/docs/configuration/global-fields/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:40 +0530</pubDate>
       
-      <guid>/docs/configuration/global-fields/</guid>
+      <guid>//localhost:1313/docs/configuration/global-fields/</guid>
       <description>
         
         
@@ -148,7 +148,7 @@ The base URL provides a common prefix for all HTTP requests in the configuration
 &lt;p&gt;&lt;strong&gt;Description&lt;/strong&gt;&lt;br&gt;
 Global headers are applied to every HTTP request in the configuration. Each header is defined as a key-value pair, where the key is the header name, and the value is an &lt;strong&gt;expr&lt;/strong&gt; expression. This allows headers to be dynamically generated using static variables or values.&lt;/p&gt;
 &lt;p&gt;If an HTTP step defines the same header as a global header, the HTTP step header takes precedence.&lt;/p&gt;
-&lt;p&gt;Global headers can also be set using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--header&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;/docs/usage/run-command/#headers&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
+&lt;p&gt;Global headers can also be set using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--header&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;//localhost:1313/docs/usage/run-command/#headers&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
 
@@ -203,10 +203,10 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
     
     <item>
       <title>Variables</title>
-      <link>/docs/configuration/variables/</link>
+      <link>//localhost:1313/docs/configuration/variables/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:50 +0530</pubDate>
       
-      <guid>/docs/configuration/variables/</guid>
+      <guid>//localhost:1313/docs/configuration/variables/</guid>
       <description>
         
         
@@ -247,7 +247,7 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
       &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;Static varibles can also be defined using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--var&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;/docs/usage/run-command/#variables&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
+&lt;p&gt;Static varibles can also be defined using the &lt;code&gt;--env&lt;/code&gt; and &lt;code&gt;--var&lt;/code&gt; flags. Learn more in the &lt;a href=&#34;//localhost:1313/docs/usage/run-command/#variables&#34; &gt;Running a Configuration&lt;/a&gt; section.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-red-200 hx-bg-red-100 hx-text-red-900 dark:hx-border-red-200/30 dark:hx-bg-red-900/30 dark:hx-text-red-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z&#34;/&gt;&lt;/svg&gt;Caution&lt;/p&gt;
 
@@ -256,7 +256,7 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;h3&gt;Dynamic Variables&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;dynamic-variables&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#dynamic-variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Dynamic variables are created and updated as the configuration runs, allowing data to be stored and passed between steps. They can reference other variables and are typically set within different &lt;a href=&#34;/docs/configuration/steps/&#34; &gt;steps&lt;/a&gt;.&lt;/p&gt;
+    &lt;a href=&#34;#dynamic-variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Dynamic variables are created and updated as the configuration runs, allowing data to be stored and passed between steps. They can reference other variables and are typically set within different &lt;a href=&#34;//localhost:1313/docs/configuration/steps/&#34; &gt;steps&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;These variables are mostly created using the &lt;code&gt;store&lt;/code&gt; field of an &lt;code&gt;HTTP&lt;/code&gt; step and are globally available. Additionally, variables created in the &lt;code&gt;update&lt;/code&gt; field of a &lt;code&gt;while&lt;/code&gt; step, if they are not part of the &lt;code&gt;init&lt;/code&gt; field, also persist globally, but is not recommended.&lt;/p&gt;
 &lt;p&gt;However, variables created in other step-specific fields, such as the &lt;code&gt;init&lt;/code&gt; field of a &lt;code&gt;while&lt;/code&gt; step or the &lt;code&gt;as&lt;/code&gt; field of a &lt;code&gt;forEach&lt;/code&gt; step, are only available within the scope of that step and do not persist globally.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
@@ -272,10 +272,10 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
     
     <item>
       <title>Steps</title>
-      <link>/docs/configuration/steps/</link>
+      <link>//localhost:1313/docs/configuration/steps/</link>
       <pubDate>Fri, 07 Feb 2025 18:33:09 +0530</pubDate>
       
-      <guid>/docs/configuration/steps/</guid>
+      <guid>//localhost:1313/docs/configuration/steps/</guid>
       <description>
         
         
@@ -315,16 +315,16 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
     &lt;a href=&#34;#step-types&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Srotas supports multiple step types, each serving a specific purpose:&lt;/p&gt;
 &lt;div class=&#34;hextra-cards hx-mt-4 hx-gap-4 hx-grid not-prose&#34; style=&#34;--hextra-cards-grid-cols: 3;&#34;&gt;
   &lt;a
-    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;/docs/configuration/steps/http&#34;
+    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;//localhost:1313/docs/configuration/steps/http&#34;
       &gt;&lt;span class=&#34;hextra-card-icon hx-flex hx-font-semibold hx-items-start hx-gap-2 hx-p-4 hx-text-gray-700 hover:hx-text-gray-900 dark:hx-text-neutral-200 dark:hover:hx-text-neutral-50&#34;&gt;&lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01&#34;/&gt;&lt;/svg&gt;HTTP Step&lt;/span&gt;&lt;/a&gt;
   &lt;a
-    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;/docs/configuration/steps/if&#34;
+    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;//localhost:1313/docs/configuration/steps/if&#34;
       &gt;&lt;span class=&#34;hextra-card-icon hx-flex hx-font-semibold hx-items-start hx-gap-2 hx-p-4 hx-text-gray-700 hover:hx-text-gray-900 dark:hx-text-neutral-200 dark:hover:hx-text-neutral-50&#34;&gt;&lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z&#34;/&gt;&lt;/svg&gt;If Step&lt;/span&gt;&lt;/a&gt;
   &lt;a
-    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;/docs/configuration/steps/foreach&#34;
+    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;//localhost:1313/docs/configuration/steps/foreach&#34;
       &gt;&lt;span class=&#34;hextra-card-icon hx-flex hx-font-semibold hx-items-start hx-gap-2 hx-p-4 hx-text-gray-700 hover:hx-text-gray-900 dark:hx-text-neutral-200 dark:hover:hx-text-neutral-50&#34;&gt;&lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z&#34;/&gt;&lt;/svg&gt;ForEach step&lt;/span&gt;&lt;/a&gt;
   &lt;a
-    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;/docs/configuration/steps/while&#34;
+    class=&#34;hextra-card hx-group hx-flex hx-flex-col hx-justify-start hx-overflow-hidden hx-rounded-lg hx-border hx-border-gray-200 hx-text-current hx-no-underline dark:hx-shadow-none hover:hx-shadow-gray-100 dark:hover:hx-shadow-none hx-shadow-gray-100 active:hx-shadow-sm active:hx-shadow-gray-200 hx-transition-all hx-duration-200 hover:hx-border-gray-300 hx-bg-transparent hx-shadow-sm dark:hx-border-neutral-800 hover:hx-bg-slate-50 hover:hx-shadow-md dark:hover:hx-border-neutral-700 dark:hover:hx-bg-neutral-900&#34;href=&#34;//localhost:1313/docs/configuration/steps/while&#34;
       &gt;&lt;span class=&#34;hextra-card-icon hx-flex hx-font-semibold hx-items-start hx-gap-2 hx-p-4 hx-text-gray-700 hover:hx-text-gray-900 dark:hx-text-neutral-200 dark:hover:hx-text-neutral-50&#34;&gt;&lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15&#34;/&gt;&lt;/svg&gt;While Step&lt;/span&gt;&lt;/a&gt;
 &lt;/div&gt;
 
@@ -349,10 +349,10 @@ The timeout field sets the maximum duration (in milliseconds) for all HTTP reque
     
     <item>
       <title>Output</title>
-      <link>/docs/configuration/output/</link>
+      <link>//localhost:1313/docs/configuration/output/</link>
       <pubDate>Fri, 07 Feb 2025 18:32:54 +0530</pubDate>
       
-      <guid>/docs/configuration/output/</guid>
+      <guid>//localhost:1313/docs/configuration/output/</guid>
       <description>
         
         

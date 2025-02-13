@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Srotas – Usage</title>
-    <link>/docs/usage/</link>
+    <link>//localhost:1313/docs/usage/</link>
     <description>Recent content in Usage on Srotas</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 08 Feb 2025 01:47:09 +0530</lastBuildDate>
     
-	  <atom:link href="/docs/usage/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="//localhost:1313/docs/usage/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Send Http Request</title>
-      <link>/docs/usage/http-req-command/</link>
+      <link>//localhost:1313/docs/usage/http-req-command/</link>
       <pubDate>Sat, 08 Feb 2025 02:44:43 +0530</pubDate>
       
-      <guid>/docs/usage/http-req-command/</guid>
+      <guid>//localhost:1313/docs/usage/http-req-command/</guid>
       <description>
         
         
@@ -222,10 +222,10 @@
     
     <item>
       <title>Running a Configuration</title>
-      <link>/docs/usage/run-command/</link>
+      <link>//localhost:1313/docs/usage/run-command/</link>
       <pubDate>Fri, 07 Feb 2025 18:34:14 +0530</pubDate>
       
-      <guid>/docs/usage/run-command/</guid>
+      <guid>//localhost:1313/docs/usage/run-command/</guid>
       <description>
         
         
@@ -244,7 +244,7 @@
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;p&gt;&lt;code&gt;config&lt;/code&gt;: The path to the yaml configuration file.&lt;/p&gt;
-&lt;p&gt;For more details on configuring Srotas, check out the &lt;a href=&#34;/docs/configuration/&#34; &gt;Configuration&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details on configuring Srotas, check out the &lt;a href=&#34;//localhost:1313/docs/configuration/&#34; &gt;Configuration&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For a complete list of available flags and usage details, run:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
@@ -393,7 +393,7 @@
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Duplicate variable and header names will result in an error.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/variables/&#34; &gt;global fields&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/variables/&#34; &gt;global fields&lt;/a&gt;.&lt;/p&gt;
 &lt;h3&gt;Headers&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;headers&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#headers&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The &lt;code&gt;--header&lt;/code&gt; flag is used to define global headers dynamically when running a Srotas configuration. Headers specified using this flag override any global headers defined in the configuration file.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Usage&lt;/strong&gt;&lt;/p&gt;
@@ -476,7 +476,7 @@
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Headers specified using &lt;code&gt;--header&lt;/code&gt; take precedence over those defined in &lt;code&gt;--env&lt;/code&gt; and the configuration file.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/global-fields/#global-headers&#34; &gt;global headers&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/global-fields/#global-headers&#34; &gt;global headers&lt;/a&gt;.&lt;/p&gt;
 &lt;h3&gt;Variables&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;variables&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#variables&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The &lt;code&gt;--var&lt;/code&gt; flag in Srotas allows users to define global variables directly through the command line. It is useful for setting static values that can be referenced within the configuration file.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Usage&lt;/strong&gt;&lt;/p&gt;
@@ -551,7 +551,7 @@ Each &lt;code&gt;--var&lt;/code&gt; flag must follow the format:&lt;/p&gt;
     &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;If a duplicate variable name is detected, Srotas will return an error.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;For more details, refer &lt;a href=&#34;/docs/configuration/variables/#static-variables&#34; &gt;variables&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For more details, refer &lt;a href=&#34;//localhost:1313/docs/configuration/variables/#static-variables&#34; &gt;variables&lt;/a&gt;.&lt;/p&gt;
 &lt;h2&gt;Chaining Configurations&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;chaining-configurations&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#chaining-configurations&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Srotas supports piping output between executions:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
@@ -566,7 +566,7 @@ Each &lt;code&gt;--var&lt;/code&gt; flag must follow the format:&lt;/p&gt;
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;This transfers the execution context from the first configuration to the second. Only the specified &lt;a href=&#34;/docs/configuration/output/&#34; &gt;output&lt;/a&gt; will be transfered.&lt;/p&gt;
+&lt;p&gt;This transfers the execution context from the first configuration to the second. Only the specified &lt;a href=&#34;//localhost:1313/docs/configuration/output/&#34; &gt;output&lt;/a&gt; will be transfered.&lt;/p&gt;
 
       </description>
     </item>
