@@ -19,12 +19,12 @@ type Request struct {
 	Name        string            // Identifier for the step.
 	Url         string            // The target URL for the request.
 	Method      string            // The HTTP method (e.g., GET, POST).
-	Body        RequestBody       `yaml:"body"` // Request payload.
-	Headers     Header            // Custom headers for the request.
-	QueryParams QueryParam        `yaml:"query_params"` // Query parameters to append to the URL.
+	Body        *RequestBody      `yaml:"body"` // Request payload.
+	Headers     *Header           // Custom headers for the request.
+	QueryParams *QueryParam       `yaml:"query_params"` // Query parameters to append to the URL.
 	Store       map[string]string // Variables mapped to expressions evaluated using the response.
 	Delay       uint              // Wait time (milliseconds) before executing the request.
-	Validations Validator         // Validation rules for the response.
+	Validations *Validator        // Validation rules for the response.
 }
 
 // Execute executes the step with the specified context.
@@ -99,38 +99,45 @@ func (r *Request) Execute(context *ExecutionContext) error {
 // Builds full URL using the base_url and the r.Url.
 // r.Headers and r.QueryParams are also compiled.
 func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
-	body, err := r.Body.build(context)
-
-	if err != nil {
-		return nil, err
-	}
-
 	gopts := context.globalOptions
-
 	eURL, err := r.buildURL(gopts.baseUrl, context)
-
-	if err != nil {
-		return nil, err
-	}
-
-	headers, err := r.Headers.compile(context)
-
-	if err != nil {
-		return nil, err
-	}
-
-	queryParams, err := r.QueryParams.compile(context)
-
 	if err != nil {
 		return nil, err
 	}
 
 	req := http.Request{
-		Method:      r.Method,
-		Url:         eURL,
-		Body:        body,
-		Headers:     headers,
-		QueryParams: queryParams,
+		Method: r.Method,
+		Url:    eURL,
+	}
+
+	if r.Body != nil {
+		body, err := r.Body.build(context)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req.Body = body
+	}
+
+	if r.Headers != nil {
+		headers, err := r.Headers.compile(context)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req.Headers = headers
+	}
+
+	if r.QueryParams != nil {
+		queryParams, err := r.QueryParams.compile(context)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req.QueryParams = queryParams
 	}
 
 	return &req, nil
@@ -225,6 +232,10 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 
 // build builds the request body with rb.Content as the base and updates the field values after evaluating expressions in rb.Data.
 func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
+	if rb == nil {
+		return nil, nil
+	}
+
 	vars := context.store.Map()
 
 	tvars := map[string]any{}
