@@ -30,14 +30,14 @@ defaults:
     shell: bash
 
 jobs:
-  defaults:
-    run:
-      working-directory: docs
   # Build job
   build:
     runs-on: ubuntu-latest
     env:
       HUGO_VERSION: 0.141.0
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - name: Install Hugo CLI
         run: |
