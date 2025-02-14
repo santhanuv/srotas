@@ -30,6 +30,9 @@ defaults:
     shell: bash
 
 jobs:
+  defaults:
+    run:
+      working-directory: docs
   # Build job
   build:
     runs-on: ubuntu-latest
