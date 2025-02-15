@@ -39,7 +39,7 @@ Srotas is a developer toolkit designed to simplify manual API testing by automat
 
 Srotas bridges the gap between manual and automated testing, giving developers a fast and structured way to test APIs without the complexity of full test automation.
 
-Start with [**Getting Started**]({{< ref "/docs/getting-started.md" >}}) to set up Srotas quickly. Learn how to define API workflows in YAML with the [**Configuration Reference**]({{< ref "/docs/configuration" >}}), explore available commands in the [**CLI Reference**]({{< ref "/docs/usage" >}}), and check out [**Examples**]({{< ref "docs/examples.md">}}) to see practical use cases in action!
+Start with [Getting Started](https://santhanuv.github.io/srotas/docs/getting-started) to set up Srotas quickly. Learn how to define API workflows in YAML with the [Configuration Reference](https://santhanuv.github.io/srotas/docs/configuration), explore available commands in the [CLI Reference](https://santhanuv.github.io/srotas/docs/usage), and check out [Examples](https://santhanuv.github.io/srotas/docs/examples) to see practical use cases in action!
 
 ## Understanding Expressions and Templates
 
