@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"fmt"
-	"maps"
 
 	"github.com/expr-lang/expr"
 )
@@ -52,11 +51,6 @@ func (e *PreExecEnv) Compile(vars map[string]any) (map[string]any, map[string][]
 		cVars    map[string]any
 		cHeaders map[string][]string
 	)
-
-	if vars != nil {
-		cVars := make(map[string]any, len(e.varExprs)+len(vars))
-		maps.Copy(cVars, vars)
-	}
 
 	if e.varExprs != nil {
 		cVars = make(map[string]any, len(e.varExprs))
