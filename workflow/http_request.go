@@ -120,25 +120,21 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 		req.Body = body
 	}
 
-	if r.Headers != nil {
-		headers, err := r.Headers.compile(context)
+	headers, err := r.Headers.compile(context)
 
-		if err != nil {
-			return nil, err
-		}
-
-		req.Headers = headers
+	if err != nil {
+		return nil, err
 	}
 
-	if r.QueryParams != nil {
-		queryParams, err := r.QueryParams.compile(context)
+	req.Headers = headers
 
-		if err != nil {
-			return nil, err
-		}
+	queryParams, err := r.QueryParams.compile(context)
 
-		req.QueryParams = queryParams
+	if err != nil {
+		return nil, err
 	}
+
+	req.QueryParams = queryParams
 
 	return &req, nil
 }

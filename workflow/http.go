@@ -53,6 +53,12 @@ func (h *Header) compile(context *ExecutionContext) (map[string][]string, error)
 	gHeaders := context.globalOptions.headers
 	vars := context.store.Map()
 
+	if h == nil {
+		cHeaders := make(map[string][]string, len(gHeaders))
+		maps.Copy(cHeaders, gHeaders)
+		return cHeaders, nil
+	}
+
 	cHeaders := make(map[string][]string, len(*h)+len(gHeaders))
 	maps.Copy(cHeaders, gHeaders)
 
@@ -100,6 +106,10 @@ func (q *QueryParam) UnmarshalYAML(value *yaml.Node) error {
 
 // compile returns the compiled query parameters after evaluating the value expressions for each query parameter.
 func (q *QueryParam) compile(context *ExecutionContext) (map[string][]string, error) {
+	if q == nil {
+		return map[string][]string{}, nil
+	}
+
 	cqps := make(map[string][]string, len(*q))
 	vars := context.store.Map()
 
