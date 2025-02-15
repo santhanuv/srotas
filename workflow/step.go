@@ -12,6 +12,7 @@ import (
 // using the provided ExecutionContext.
 type Step interface {
 	Execute(execCtx *ExecutionContext) error
+	// Validate checks the fields of the step and returns an error if any field is invalid.
 	Validate() error
 }
 
