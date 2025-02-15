@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/expr-lang/expr"
+	"github.com/santhanuv/srotas/internal"
 	"github.com/santhanuv/srotas/internal/http"
 	"gopkg.in/yaml.v3"
 )
@@ -25,6 +26,31 @@ type Request struct {
 	Store       map[string]string // Variables mapped to expressions evaluated using the response.
 	Delay       uint              // Wait time (milliseconds) before executing the request.
 	Validations *Validator        // Validation rules for the response.
+}
+
+// Validate checks the fields of the [Request] step and returns a list of validation errors, if any.
+func (r *Request) Validate() error {
+	vErr := internal.ValidationError{}
+	if r.Name == "" {
+		err := internal.RequiredFieldError{Field: "name"}
+		vErr.Add(err)
+	}
+
+	if r.Url == "" {
+		err := internal.RequiredFieldError{Field: "url"}
+		vErr.Add(err)
+	}
+
+	if r.Method == "" {
+		err := internal.RequiredFieldError{Field: "method"}
+		vErr.Add(err)
+	}
+
+	if vErr.HasError() {
+		return fmt.Errorf("http request step: %w", &vErr)
+	}
+
+	return nil
 }
 
 // Execute executes the step with the specified context.

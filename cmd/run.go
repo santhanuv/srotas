@@ -70,7 +70,7 @@ var runCommand = cobra.Command{
 		// Parsing
 		def, err := workflow.ParseConfig(runCmdEnv.config, logger)
 		if err != nil {
-			logger.Fatal("", err)
+			logger.Fatal("\n%v", err)
 		}
 
 		logger.Debug("successfully parsed config.")

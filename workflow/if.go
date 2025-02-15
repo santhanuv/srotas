@@ -5,6 +5,7 @@ import (
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
+	"github.com/santhanuv/srotas/internal"
 )
 
 // If represents a conditional step that executes Then steps when Condition evaluates to true;
@@ -16,6 +17,29 @@ type If struct {
 	cCondition *vm.Program // Precompiled condition expression.
 	Then       StepList    // Steps to execute if Condition is true.
 	Else       StepList    // Steps to execute if Condition is false.
+}
+
+// Validate checks the fields of the [If] step and returns a list of validation errors, if any.
+func (i *If) Validate() error {
+	vErr := internal.ValidationError{}
+
+	if i.Name == "" {
+		vErr.Add(internal.RequiredFieldError{Field: "name"})
+	}
+
+	if i.Condition == "" {
+		vErr.Add(internal.RequiredFieldError{Field: "condition"})
+	}
+
+	if i.Then == nil {
+		vErr.Add(internal.RequiredFieldError{Field: "then"})
+	}
+
+	if vErr.HasError() {
+		return fmt.Errorf("if step: %w", &vErr)
+	}
+
+	return nil
 }
 
 // Execute executes the step with the specified context.

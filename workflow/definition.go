@@ -1,5 +1,11 @@
 package workflow
 
+import (
+	"fmt"
+
+	"github.com/santhanuv/srotas/internal"
+)
+
 // Definition represents the configuration structure that is unmarshalled from the config file.
 type Definition struct {
 	Version   string            // The configuration version used for execution.
@@ -11,4 +17,15 @@ type Definition struct {
 	Output    map[string]string // Defines variables to be included in the output.
 	// If true, all variables in ExecutionContext are included in the output.
 	OutputAll bool `yaml:"output_all"`
+}
+
+func (d *Definition) Validate() error {
+	if d.Steps == nil {
+		vErr := internal.ValidationError{}
+		vErr.Add(internal.RequiredFieldError{Field: "steps"})
+
+		return fmt.Errorf("config: %w", &vErr)
+	}
+
+	return nil
 }

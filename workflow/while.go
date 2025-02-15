@@ -5,6 +5,7 @@ import (
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
+	"github.com/santhanuv/srotas/internal"
 )
 
 // While represents a loop that executes the steps in Body while the Condition evaluates to true.
@@ -19,6 +20,29 @@ type While struct {
 	cCondition *vm.Program            // Compiled condition.
 	cUpdation  map[string]*vm.Program // Compiled update expressions.
 	Body       StepList               // Steps to execute in each iteration.
+}
+
+// Validate checks the fields of the [While] step and returns a list of validation errors, if any.
+func (w *While) Validate() error {
+	vErr := internal.ValidationError{}
+
+	if w.Name == "" {
+		vErr.Add(internal.RequiredFieldError{Field: "name"})
+	}
+
+	if w.Condition == "" {
+		vErr.Add(internal.RequiredFieldError{Field: "condition"})
+	}
+
+	if w.Body == nil {
+		vErr.Add(internal.RequiredFieldError{Field: "body"})
+	}
+
+	if vErr.HasError() {
+		return fmt.Errorf("while step: %w", &vErr)
+	}
+
+	return nil
 }
 
 // Execute executes the step with the specified context.
