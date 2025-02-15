@@ -7,10 +7,10 @@ title: 'Docs'
 Welcome to the Srotas documentation. Below, you'll find links to different sections to help you get started and explore advanced features.
 
 {{< cards >}}
-  {{< card link="../callout" title="GettingStarted" icon="information-circle" subtitle="Learn how to install and set up Srotas for API testing." >}}
-  {{< card link="../callout" title="Usage" icon="play" subtitle="Understand how to execute tests using Srotas, including CLI commands and workflow." >}}
-  {{< card link="../callout" title="Configuration" icon="adjustments" subtitle="Explore the YAML configuration options." >}}
-  {{< card link="../callout" title="Example" icon="document-text" subtitle="Check out practical examples showcasing different use cases of Srotas in action." >}}
+  {{< card link="/srotas/docs/getting-started" title="GettingStarted" icon="information-circle" subtitle="Learn how to install and set up Srotas for API testing." >}}
+  {{< card link="/srotas/docs/usage" title="Usage" icon="play" subtitle="Understand how to execute tests using Srotas, including CLI commands and workflow." >}}
+  {{< card link="/srotas/docs/configuration" title="Configuration" icon="adjustments" subtitle="Explore the YAML configuration options." >}}
+  {{< card link="/srotas/docs/examples" title="Example" icon="document-text" subtitle="Check out practical examples showcasing different use cases of Srotas in action." >}}
 {{< /cards >}}
 
 

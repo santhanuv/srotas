@@ -8,10 +8,10 @@ weight: 3
 Srotas can execute a YAML configuration file to facilitate API testing and workflow automation. The configuration consists of multiple sections that define how requests are executed, variables are managed, and outputs are handled.  
 
 {{< cards >}}
-  {{< card link="../callout" title="Global Fields" subtitle="Defines global settings such as headers and environment variables that apply across all steps." icon="globe-alt" >}}
-  {{< card link="../callout" title="Variables" subtitle="Covers static and dynamic variables that store and manipulate data during execution." icon="variable" >}}
-  {{< card link="../callout" title="Steps" subtitle="Details the different execution steps available, such as conditional logic, loops, and HTTP requests." icon="chevron-right" >}}
-  {{< card link="../callout" title="Output" subtitle="Controls what data is returned after execution, supporting integration with chained executions." icon="external-link" >}}
+  {{< card link="/srotas/docs/configuration/global-fields" title="Global Fields" subtitle="Defines global settings such as headers and environment variables that apply across all steps." icon="globe-alt" >}}
+  {{< card link="/srotas/docs/configuration/variables" title="Variables" subtitle="Covers static and dynamic variables that store and manipulate data during execution." icon="variable" >}}
+  {{< card link="/srotas/docs/configuration/steps" title="Steps" subtitle="Details the different execution steps available, such as conditional logic, loops, and HTTP requests." icon="chevron-right" >}}
+  {{< card link="/srotas/docs/configuration/output" title="Output" subtitle="Controls what data is returned after execution, supporting integration with chained executions." icon="external-link" >}}
 {{< /cards >}}
 
 
@@ -57,7 +57,7 @@ steps:
                   method: PATCH
                   url: "/api/tasks/:task.id"
                   body:
-                    status: "reviewed"
+                    status: "'reviewed'"
 ```
 
 ### Explanation  

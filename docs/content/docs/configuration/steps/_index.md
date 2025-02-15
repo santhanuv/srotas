@@ -20,10 +20,10 @@ A step consists of the following fields:
 Srotas supports multiple step types, each serving a specific purpose:  
 
 {{< cards >}}
-  {{< card link="/docs/configuration/steps/http" title="HTTP Step" icon="server" >}}
-  {{< card link="/docs/configuration/steps/if" title="If Step" icon="filter" >}}
-  {{< card link="/docs/configuration/steps/foreach" title="ForEach step" icon="duplicate" >}}
-  {{< card link="/docs/configuration/steps/while" title="While Step" icon="refresh" >}}
+  {{< card link="/srotas/docs/configuration/steps/http" title="HTTP Step" icon="server" >}}
+  {{< card link="/srotas/docs/configuration/steps/if" title="If Step" icon="filter" >}}
+  {{< card link="/srotas/docs/configuration/steps/foreach" title="ForEach step" icon="duplicate" >}}
+  {{< card link="/srotas/docs/configuration/steps/while" title="While Step" icon="refresh" >}}
 {{< /cards >}}
 
 Each step type has its own structure and fields, detailed in their respective sections.  

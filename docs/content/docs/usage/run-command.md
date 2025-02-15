@@ -2,6 +2,7 @@
 date: '2025-02-07T18:34:14+05:30'
 draft: false
 title: 'Running a Configuration'
+weight: 1
 ---
 
 ## Usage
@@ -64,7 +65,6 @@ You can provide the JSON data directly as a string or specify a file path contai
   },
   "Headers": {
     "Authorization": ["auth_token"],
-    "X-Request-ID": ["uuid()"]
   }
 }
 ```
@@ -85,7 +85,7 @@ srotas run --env env.json config.yaml
 > [!WARNING]
 > Duplicate variable and header names will result in an error.
 
-For more details, refer [global fields]({{< ref "/docs/configuration/variables.md" >}}).
+For more details, refer [Global Fields]({{< ref "/docs/configuration/global-fields.md" >}}) and [Variables]({{< ref "/docs/configuration/variables.md" >}}).
 
 ### Headers
 
@@ -131,7 +131,7 @@ srotas run --header "Authorization: 'Bearer $TOKEN'" config.yaml
 > [!NOTE]
 > Headers specified using `--header` take precedence over those defined in `--env` and the configuration file.
 
-For more details, refer [global headers]({{< ref "/docs/configuration/global-fields.md#global-headers" >}}).
+For more details, refer [Global Headers]({{< ref "/docs/configuration/global-fields.md#global-headers" >}}).
 
 
 
@@ -157,7 +157,7 @@ key=value
 ```
 
 - **key**: The name of the variable. Must be unique.
-- **value**: An [expr](https://expr-lang.org/) expression. This expression is evaluated without access to any other variables.
+- **value**: An [expr](https://expr-lang.org/docs/language-definition) expression. This expression is evaluated without access to any other variables.
 
 Multiple variables can be specified by using the flag multiple times.
 
@@ -173,7 +173,7 @@ srotas run --var timeout=30 --var api_version="v2" config.yaml
 > [!WARNING]
 > If a duplicate variable name is detected, Srotas will return an error.
 
-For more details, refer [variables]({{< ref "/docs/configuration/variables.md#static-variables" >}}).
+For more details, refer [Variables]({{< ref "/docs/configuration/variables.md#static-variables" >}}).
 
 
 ## Chaining Configurations
@@ -183,4 +183,7 @@ Srotas supports piping output between executions:
 srotas run fetch_users.yaml | srotas run process_tasks.yaml
 ```
 
-This transfers the execution context from the first configuration to the second. Only the specified [output]({{< ref "/docs/configuration/output.md" >}}) will be transfered.
+This transfers the execution context from the first configuration to the second. Only the specified [Output]({{< ref "/docs/configuration/output.md" >}}) will be transfered.
+
+> [!NOTE]
+> The `output` or `output_all` field is mandatory for proper configuration chaining.

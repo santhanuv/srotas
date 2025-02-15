@@ -15,7 +15,7 @@ step:
   query_params:
     key: "value"
   headers:
-    Custom-Header: "'dynamic_value'"
+    Custom-Header: "dynamic_value"
   body:
     file: "request_template.json"
     data:

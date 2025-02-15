@@ -9,7 +9,7 @@ Srotas is a developer toolkit designed to simplify manual API testing by automat
 ## Key Features  
 - **YAML-Based Configuration** – Define API requests, assertions, and workflows in a structured format.  
 - **Dynamic Variables** – Store and reuse response values using expressions.  
-- **Templated Requests** – Use Go `text/template` for dynamic request bodies.  
+- **Templated Requests** – Use Go `template` syntax for dynamic request bodies.  
 - **Assertions & Validation** – Validate responses with powerful `expr` expressions.  
 - **Debugging & Logging** – Enable `--debug` mode for detailed execution insights.  
 
@@ -18,7 +18,7 @@ Srotas is a developer toolkit designed to simplify manual API testing by automat
 
     1. Visit the [Srotas Releases](https://github.com/your-repo/srotas/releases) page.  
     2. Download the latest release for your platform (Linux, macOS, or Windows).  
-    3. Extract the archive and move the binary to a directory in your system's `PATH`.  
+    3. Move the binary to a directory in your system's `PATH`.  
 
     Now, you can run `srotas --help` to verify the installation.  
 
@@ -29,8 +29,7 @@ Srotas is a developer toolkit designed to simplify manual API testing by automat
        request:
          method: GET
          url: "https://api.example.com/user"
-       asserts:
-         - "response.status_code == 200"
+       status_code: 200
    ```  
 3. Run the test:  
    ```sh
@@ -38,13 +37,24 @@ Srotas is a developer toolkit designed to simplify manual API testing by automat
    ```  
 
 ## Why Srotas?  
-- **Efficient Manual Testing** – Automate setup steps while keeping control over the testing process.  
-- **Flexible Execution** – Run individual steps or full test sequences as needed.  
-- **Lightweight & Portable** – No dependencies, just a single binary.  
+- **Efficient Manual Testing** – The tool automates all necessary HTTP requests leading up to the feature you want to test while keeping you in control.  
+- **Configurable Execution** – Customize test sequences to fit your workflow, running individual steps or complete test flows as needed.  
+- **Lightweight & Portable** – No dependencies, just a single binary.
 
 Srotas bridges the gap between manual and automated testing, giving developers a fast and structured way to test APIs without the complexity of full test automation.
 
 Start with [**Getting Started**]({{< ref "/docs/getting-started.md" >}}) to set up Srotas quickly. Learn how to define API workflows in YAML with the [**Configuration Reference**]({{< ref "/docs/configuration" >}}), explore available commands in the [**CLI Reference**]({{< ref "/docs/usage" >}}), and check out [**Examples**]({{< ref "docs/examples.md">}}) to see practical use cases in action!
 
-## Dynamic Expressions & Templating in Srotas
-Srotas leverages expr expressions in its YAML configurations and CLI to compute dynamic values at runtime. For defining the HTTP request body, Srotas uses Go’s text/template syntax—see various blog posts and documentation for best practices on writing and organizing these templates.
+## Understanding Expressions and Templates
+
+Srotas leverages **expr expressions** for dynamic value computation and **Go’s text/template syntax** for flexible request body definitions. Understanding these concepts will help you write powerful and customizable test configurations.
+
+### Expr Expressions
+Srotas allows you to use `expr` expressions in YAML configurations and the CLI to evaluate dynamic values at runtime. You can learn more about the syntax and capabilities of `expr` here: [Expr Language Definition](https://expr-lang.org/docs/language-definition)
+
+### Go Text Templates
+For defining HTTP request bodies, Srotas utilizes Go’s `text/template` syntax. If you're new to Go templates or want to explore advanced templating features, refer to these resources:  
+[HashiCorp Nomad Go Template Guide](https://developer.hashicorp.com/nomad/tutorials/templates/go-template-syntax)  
+[Gomplate Template Syntax](https://docs.gomplate.ca/syntax/)  
+[Official Go text/template Documentation](https://pkg.go.dev/text/template)
+
