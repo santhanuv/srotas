@@ -5,7 +5,6 @@ import (
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
-	"github.com/santhanuv/srotas/internal"
 )
 
 // While represents a loop that executes the steps in Body while the Condition evaluates to true.
@@ -24,18 +23,18 @@ type While struct {
 
 // Validate checks the fields of the [While] step and returns a list of validation errors, if any.
 func (w *While) Validate() error {
-	vErr := internal.ValidationError{}
+	vErr := ValidationError{}
 
 	if w.StepName == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "name"})
+		vErr.Add(RequiredFieldError{Field: "name"})
 	}
 
 	if w.Condition == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "condition"})
+		vErr.Add(RequiredFieldError{Field: "condition"})
 	}
 
 	if w.Body == nil {
-		vErr.Add(internal.RequiredFieldError{Field: "body"})
+		vErr.Add(RequiredFieldError{Field: "body"})
 	}
 
 	if vErr.HasError() {

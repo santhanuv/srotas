@@ -2,8 +2,6 @@ package workflow
 
 import (
 	"fmt"
-
-	"github.com/santhanuv/srotas/internal"
 )
 
 // Definition represents the configuration structure that is unmarshalled from the config file.
@@ -21,8 +19,8 @@ type Definition struct {
 
 func (d *Definition) Validate() error {
 	if d.Steps == nil {
-		vErr := internal.ValidationError{}
-		vErr.Add(internal.RequiredFieldError{Field: "steps"})
+		vErr := ValidationError{}
+		vErr.Add(RequiredFieldError{Field: "steps"})
 
 		return fmt.Errorf("config: %w", &vErr)
 	}

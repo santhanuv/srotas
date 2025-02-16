@@ -5,7 +5,6 @@ import (
 
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
-	"github.com/santhanuv/srotas/internal"
 )
 
 // If represents a conditional step that executes Then steps when Condition evaluates to true;
@@ -21,18 +20,18 @@ type If struct {
 
 // Validate checks the fields of the [If] step and returns a list of validation errors, if any.
 func (i *If) Validate() error {
-	vErr := internal.ValidationError{}
+	vErr := ValidationError{}
 
 	if i.StepName == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "name"})
+		vErr.Add(RequiredFieldError{Field: "name"})
 	}
 
 	if i.Condition == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "condition"})
+		vErr.Add(RequiredFieldError{Field: "condition"})
 	}
 
 	if i.Then == nil {
-		vErr.Add(internal.RequiredFieldError{Field: "then"})
+		vErr.Add(RequiredFieldError{Field: "then"})
 	}
 
 	if vErr.HasError() {

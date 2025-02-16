@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/expr-lang/expr"
-	"github.com/santhanuv/srotas/internal"
 )
 
 // ForEach represents a loop step that executes the steps in Body for each item in List.
@@ -20,22 +19,22 @@ type ForEach struct {
 
 // Validate checks the fields of the [ForEach] step and returns a list of validation errors, if any.
 func (f *ForEach) Validate() error {
-	vErr := internal.ValidationError{}
+	vErr := ValidationError{}
 
 	if f.StepName == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "name"})
+		vErr.Add(RequiredFieldError{Field: "name"})
 	}
 
 	if f.List == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "list"})
+		vErr.Add(RequiredFieldError{Field: "list"})
 	}
 
 	if f.As == "" {
-		vErr.Add(internal.RequiredFieldError{Field: "as"})
+		vErr.Add(RequiredFieldError{Field: "as"})
 	}
 
 	if f.Body == nil {
-		vErr.Add(internal.RequiredFieldError{Field: "body"})
+		vErr.Add(RequiredFieldError{Field: "body"})
 	}
 
 	if vErr.HasError() {

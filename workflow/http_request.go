@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/expr-lang/expr"
-	"github.com/santhanuv/srotas/internal"
 	"github.com/santhanuv/srotas/internal/http"
 	"gopkg.in/yaml.v3"
 )
@@ -30,19 +29,19 @@ type Request struct {
 
 // Validate checks the fields of the [Request] step and returns a list of validation errors, if any.
 func (r *Request) Validate() error {
-	vErr := internal.ValidationError{}
+	vErr := ValidationError{}
 	if r.StepName == "" {
-		err := internal.RequiredFieldError{Field: "name"}
+		err := RequiredFieldError{Field: "name"}
 		vErr.Add(err)
 	}
 
 	if r.Url == "" {
-		err := internal.RequiredFieldError{Field: "url"}
+		err := RequiredFieldError{Field: "url"}
 		vErr.Add(err)
 	}
 
 	if r.Method == "" {
-		err := internal.RequiredFieldError{Field: "method"}
+		err := RequiredFieldError{Field: "method"}
 		vErr.Add(err)
 	}
 
