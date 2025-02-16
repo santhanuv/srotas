@@ -85,20 +85,22 @@ var runCommand = cobra.Command{
 		}
 
 		// Parsing
+		logger.Debug("parsing configuration...")
+
 		def, err := workflow.ParseConfig(runCmdFlags.config, logger)
 		if err != nil {
-			logger.Fatal("\n%v", err)
+			logger.Fatal("error on parsing config: %v", err)
 		}
 
-		logger.Debug("successfully parsed config.")
-
 		// Context Initialization
+		logger.Debug("initializing context...")
+
 		if err := runCmdFlags.env.AddVars(def.Variables); err != nil {
-			logger.Fatal("config predefined variable error: %v", err)
+			logger.Fatal("error initializing variable: %v", err)
 		}
 
 		if err := runCmdFlags.env.AddHeaders(def.Headers); err != nil {
-			logger.Fatal("config global header error: %v", err)
+			logger.Fatal("error initializing header: %v", err)
 		}
 
 		variables, headers, err := runCmdFlags.env.Compile(runCmdFlags.pipedVars)
@@ -125,15 +127,13 @@ var runCommand = cobra.Command{
 			logger.Fatal("failed to initialize config for execution: %v", err)
 		}
 
-		logger.Debug("successfully initialized config for execution.")
-
 		// Execution
+		logger.Debug("executing configuration...")
+
 		err = workflow.Execute(def, execCtx)
 		if err != nil {
 			logger.Fatal("failed to execute config: %v", err)
 		}
-
-		logger.Debug("successfully executed configuration")
 
 		// Output updated variables
 		if def.OutputAll || def.Output != nil {
@@ -147,11 +147,11 @@ var runCommand = cobra.Command{
 			_, err = os.Stdout.Write(outJson)
 
 			if err != nil {
-				logger.Fatal("failed to write outpus: %v")
+				logger.Fatal("failed to write output: %v")
 			}
 		}
 
-		logger.Debug("completed execution.")
+		logger.Debug("config executed successfully.")
 	},
 }
 
