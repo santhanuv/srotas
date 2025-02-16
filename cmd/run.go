@@ -147,7 +147,13 @@ var runCommand = cobra.Command{
 			_, err = os.Stdout.Write(outJson)
 
 			if err != nil {
-				logger.Fatal("failed to write output: %v")
+				logger.Fatal("failed to write output: %v", err)
+			}
+
+			_, err = os.Stdout.Write([]byte("\n"))
+
+			if err != nil {
+				logger.Fatal("failed to write output: %v", err)
 			}
 		}
 
