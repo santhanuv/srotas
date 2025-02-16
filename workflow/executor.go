@@ -13,12 +13,13 @@ import (
 type ExecutionContext struct {
 	httpClient    *http.Client   // Client used for the execution of http request.
 	store         *store.Store   // Store used in the config execution.
-	globalOptions *globalOptions // Global options for config execution.
+	globalOptions *ConfigOptions // Global options for config execution.
 	logger        *log.Logger    // Logger used in the config execution.
 }
 
-// globalOptions stores the base URL and global headers used during config execution.
-type globalOptions struct {
+// ConfigOptions defines execution settings for the configuration,
+// including the base URL and global headers.
+type ConfigOptions struct {
 	baseUrl string              // baseUrl to be used in the config execution.
 	headers map[string][]string // global headers to be used in the config execution.
 }
@@ -72,7 +73,7 @@ func Execute(definition *Definition, context *ExecutionContext) error {
 // WithGlobalOptions configures the [ExecutionContext] with the baseUrl and headers.
 func WithGlobalOptions(baseUrl string, headers map[string][]string) ExecutionOption {
 	return func(context *ExecutionContext) error {
-		gOpts := globalOptions{
+		gOpts := ConfigOptions{
 			baseUrl: baseUrl,
 			headers: headers,
 		}

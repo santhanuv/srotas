@@ -19,17 +19,34 @@ import (
 func init() {
 	rootCmd.AddCommand(&runCommand)
 
-	runCommand.Flags().BoolP("debug", "D", false,
-		"Enables debug mode, providing detailed logs about the execution of the configuration file.")
+	runCommand.Flags().BoolP("debug", "D", false, `
+		Enables debug mode, providing detailed logs about the execution of the
+		configuration file.`)
 
-	runCommand.Flags().StringP("env", "E", "",
-		"Loads global headers and variables from a JSON string or file. The JSON may contain Variables and Headers fields, where values are expressions. At least one of these fields must be present, and duplicate variable names result in an error.")
+	runCommand.Flags().StringP("env", "E", "", `
+		Loads global headers and variables from a JSON string or file. The
+		JSON may contain Variables and Headers fields, where values are expressions.
+		At least one of these fields must be present, and duplicate variable names
+		and header names will result in an error.
 
-	runCommand.Flags().StringArrayP("header", "H", nil,
-		"Adds an additional global header in the format 'key:value'. Multiple headers can be specified, and values for the same key are combined with those in the config file. The value supports expressions, allowing dynamic header generation using defined or command-line variables.")
+		Multiple headers with the same name cannot be defined globally
+		(in --header, --env, or the config file). If a duplicate header is defined,
+		an error is raised.
+		`)
 
-	runCommand.Flags().StringArrayP("var", "V", nil,
-		"Defines a global variable in the format name=value, where the value is an expression. Variables must be unique; redefining an existing one results in an error.")
+	runCommand.Flags().StringArrayP("header", "H", nil, `
+		Adds an additional global header in the format 'key:value'. Multiple headers
+		can be specified by using the flag multipe times.
+
+		Multiple headers with the same name cannot be defined globally (in --header,
+		--env, or the config file). If a duplicate header is defined, an error is raised.
+
+		The value supports expressions, allowing dynamic header generation using defined
+		or command-line variables.`)
+
+	runCommand.Flags().StringArrayP("var", "V", nil, `
+		Defines a global variable in the format name=value, where the value is an expression.
+		Variables must be unique; redefining an existing one results in an error.`)
 }
 
 // output represents the output of the run command
@@ -39,8 +56,8 @@ type output struct {
 	Variables map[string]any
 }
 
-// runCommandEnv contains all the parsed values of the run command.
-type runCommandEnv struct {
+// runCmdFlags contains all the parsed args and flags of the run command.
+type runCmdFlags struct {
 	config    string
 	debugMode bool
 	env       *workflow.PreExecEnv
@@ -55,20 +72,20 @@ var runCommand = cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := log.New(os.Stderr, io.Discard, os.Stderr)
 
-		runCmdEnv, err := parseCommand(cmd, args)
+		runCmdFlags, err := parseCommand(cmd, args)
 		if err != nil {
 			logger.Fatal("%v", err)
 		}
 
 		// Logger setup
-		logger.SetConfig(runCmdEnv.config)
-		if runCmdEnv.debugMode {
+		logger.SetConfig(runCmdFlags.config)
+		if runCmdFlags.debugMode {
 			logger.SetDebugOutput(os.Stderr)
 			logger.SetDebugMode(true)
 		}
 
 		// Parsing
-		def, err := workflow.ParseConfig(runCmdEnv.config, logger)
+		def, err := workflow.ParseConfig(runCmdFlags.config, logger)
 		if err != nil {
 			logger.Fatal("\n%v", err)
 		}
@@ -76,21 +93,21 @@ var runCommand = cobra.Command{
 		logger.Debug("successfully parsed config.")
 
 		// Context Initialization
-		if err := runCmdEnv.env.AddVars(def.Variables); err != nil {
+		if err := runCmdFlags.env.AddVars(def.Variables); err != nil {
 			logger.Fatal("config predefined variable error: %v", err)
 		}
 
-		if err := runCmdEnv.env.AddHeaders(def.Headers); err != nil {
+		if err := runCmdFlags.env.AddHeaders(def.Headers); err != nil {
 			logger.Fatal("config global header error: %v", err)
 		}
 
-		variables, headers, err := runCmdEnv.env.Compile(runCmdEnv.pipedVars)
+		variables, headers, err := runCmdFlags.env.Compile(runCmdFlags.pipedVars)
 
 		if err != nil {
 			logger.Fatal("failed to initialize config for execution: %v", err)
 		}
 
-		var s *store.Store = store.NewStore(runCmdEnv.pipedVars)
+		var s *store.Store = store.NewStore(runCmdFlags.pipedVars)
 
 		if variables != nil {
 			s.Add(variables)
@@ -139,7 +156,7 @@ var runCommand = cobra.Command{
 }
 
 // parseCommand extracts flags and arguments from the command line and returns a runCommandEnv instance with the parsed details.
-func parseCommand(cmd *cobra.Command, args []string) (*runCommandEnv, error) {
+func parseCommand(cmd *cobra.Command, args []string) (*runCmdFlags, error) {
 	// Config setup
 	configPath := args[0]
 	if configPath == "" {
@@ -207,7 +224,7 @@ func parseCommand(cmd *cobra.Command, args []string) (*runCommandEnv, error) {
 		return nil, err
 	}
 
-	return &runCommandEnv{
+	return &runCmdFlags{
 		debugMode: debugMode,
 		config:    configPath,
 		env:       env,

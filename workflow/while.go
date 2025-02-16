@@ -13,7 +13,7 @@ import (
 // Update specifies variable expressions that are updated after each iteration.
 type While struct {
 	Type       string                 // The type of the step.
-	Name       string                 // Identifier for the step.
+	StepName   string                 `yaml:"name"` // Identifier for the step.
 	Init       map[string]any         // Initial variables for the loop.
 	Condition  string                 // Expr conditional expression for the loop.
 	Update     map[string]string      // Variable expressions to update after each iteration.
@@ -26,7 +26,7 @@ type While struct {
 func (w *While) Validate() error {
 	vErr := internal.ValidationError{}
 
-	if w.Name == "" {
+	if w.StepName == "" {
 		vErr.Add(internal.RequiredFieldError{Field: "name"})
 	}
 
@@ -45,13 +45,17 @@ func (w *While) Validate() error {
 	return nil
 }
 
+func (w *While) Name() string {
+	return w.StepName
+}
+
 // Execute executes the step with the specified context.
 func (w *While) Execute(context *ExecutionContext) error {
 	variables := context.store.Map()
 
 	for key, val := range w.Init {
 		if _, ok := variables[key]; ok {
-			return fmt.Errorf("while step '%s': variable '%s' already defined", w.Name, key)
+			return fmt.Errorf("while step '%s': variable '%s' already defined", w.StepName, key)
 		}
 
 		variables[key] = val
@@ -65,7 +69,7 @@ func (w *While) Execute(context *ExecutionContext) error {
 
 	if w.cCondition == nil {
 		if w.Condition == "" {
-			return fmt.Errorf("while step '%s': condition is mandatory", w.Name)
+			return fmt.Errorf("while step '%s': condition is mandatory", w.StepName)
 		}
 
 		program, err := expr.Compile(w.Condition, expr.Env(variables), expr.AsBool())
@@ -81,7 +85,7 @@ func (w *While) Execute(context *ExecutionContext) error {
 		w.cUpdation = make(map[string]*vm.Program, len(w.Update))
 
 		if w.Update == nil {
-			context.logger.Error("while step '%s': no loop updatation is set", w.Name)
+			context.logger.Error("while step '%s': no loop updatation is set", w.StepName)
 		}
 
 		for key, uExpr := range w.Update {

@@ -12,7 +12,7 @@ import (
 // otherwise, it executes Else steps if provided.
 type If struct {
 	Type       string      // The type of the step.
-	Name       string      // Identifier for the step.
+	StepName   string      `yaml:"name"` // Identifier for the step.
 	Condition  string      // Expression that determines which branch to execute.
 	cCondition *vm.Program // Precompiled condition expression.
 	Then       StepList    // Steps to execute if Condition is true.
@@ -23,7 +23,7 @@ type If struct {
 func (i *If) Validate() error {
 	vErr := internal.ValidationError{}
 
-	if i.Name == "" {
+	if i.StepName == "" {
 		vErr.Add(internal.RequiredFieldError{Field: "name"})
 	}
 
@@ -42,13 +42,17 @@ func (i *If) Validate() error {
 	return nil
 }
 
+func (i *If) Name() string {
+	return i.StepName
+}
+
 // Execute executes the step with the specified context.
 func (i *If) Execute(context *ExecutionContext) error {
 	variables := context.store.Map()
 
 	if i.cCondition == nil {
 		if i.Condition == "" {
-			return fmt.Errorf("if step '%s': condition is mandatory", i.Name)
+			return fmt.Errorf("if step '%s': condition is mandatory", i.StepName)
 		}
 
 		program, err := expr.Compile(i.Condition, expr.Env(variables), expr.AsBool())
@@ -84,7 +88,7 @@ func (i *If) Execute(context *ExecutionContext) error {
 		}
 	}
 
-	context.logger.Debug("successfully completed the execution of if step '%s'.", i.Name)
+	context.logger.Debug("successfully completed the execution of if step '%s'.", i.StepName)
 
 	return nil
 }

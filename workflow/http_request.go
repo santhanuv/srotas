@@ -17,7 +17,7 @@ import (
 // Request represents an HTTP request step in the execution flow.
 type Request struct {
 	Type        string            // The type of the step.
-	Name        string            // Identifier for the step.
+	StepName    string            `yaml:"name"` // Identifier for the step.
 	Url         string            // The target URL for the request.
 	Method      string            // The HTTP method (e.g., GET, POST).
 	Body        *RequestBody      `yaml:"body"` // Request payload.
@@ -31,7 +31,7 @@ type Request struct {
 // Validate checks the fields of the [Request] step and returns a list of validation errors, if any.
 func (r *Request) Validate() error {
 	vErr := internal.ValidationError{}
-	if r.Name == "" {
+	if r.StepName == "" {
 		err := internal.RequiredFieldError{Field: "name"}
 		vErr.Add(err)
 	}
@@ -53,14 +53,18 @@ func (r *Request) Validate() error {
 	return nil
 }
 
+func (r *Request) Name() string {
+	return r.StepName
+}
+
 // Execute executes the step with the specified context.
 func (r *Request) Execute(context *ExecutionContext) error {
 	req, err := r.build(context)
 	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
+		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
-	context.logger.Info("sending http request '%s': %s %s", r.Name, req.Method, req.Url)
+	context.logger.Info("sending http request '%s': %s %s", r.StepName, req.Method, req.Url)
 	context.logger.DebugJson(req.Body, "http request: ")
 
 	delayDuration := time.Duration(r.Delay) * time.Millisecond
@@ -71,10 +75,10 @@ func (r *Request) Execute(context *ExecutionContext) error {
 
 	res, err := context.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
+		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
-	context.logger.Info("http request '%s' responded with status %d", r.Name, res.StatusCode)
+	context.logger.Info("http request '%s' responded with status %d", r.StepName, res.StatusCode)
 	context.logger.DebugJson(res.Body, "http response: ")
 
 	var pb any
@@ -85,7 +89,7 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
+		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
 	context.store.Set("response", resBody.body)
@@ -94,7 +98,7 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	err = resBody.store(r.Store, context)
 
 	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.Name, err)
+		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
 	err = r.Validations.Validate(context, res.StatusCode, &resBody)
@@ -110,7 +114,7 @@ func (r *Request) Execute(context *ExecutionContext) error {
 		jres, je := json.MarshalIndent(fres, "", " ")
 
 		if je != nil {
-			return fmt.Errorf("http request '%s': unable to output response: %v", r.Name, je)
+			return fmt.Errorf("http request '%s': unable to output response: %v", r.StepName, je)
 		}
 
 		return fmt.Errorf("%v\nresponse: %s", err, string(jres))
