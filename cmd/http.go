@@ -4,15 +4,34 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"strings"
 
 	"github.com/santhanuv/srotas/internal/http"
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(&httpCommand)
+func newHttpCommand(out io.Writer) *cobra.Command {
+	var httpCommand = cobra.Command{
+
+		Use:   "http [METHOD] [URL]",
+		Short: "Send an HTTP request to a specified URL.",
+		Long: `
+Send an HTTP request using the specified METHOD:
+
+  - METHOD: The HTTP method to use (GET, POST, PUT, DELETE, etc.).
+  - URL: The target URL for the request.
+
+Optional flags allow you to add query parameters, headers, and a request body.`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := run(cmd, args, out); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
 
 	httpCommand.Flags().StringArrayP("query", "Q", []string{},
 		"Define query parameters as 'key=value'. Multiple parameters can be specified using commas.")
@@ -22,81 +41,72 @@ func init() {
 
 	httpCommand.Flags().StringP("body", "B", "",
 		"Provide a request body. Only JSON is supported.")
+
+	return &httpCommand
 }
 
-var httpCommand = cobra.Command{
+func run(cmd *cobra.Command, args []string, out io.Writer) error {
+	method, rawURL := args[0], args[1]
+	method = strings.ToUpper(method)
 
-	Use:   "http [METHOD] [URL]",
-	Short: "Send an HTTP request to a specified URL.",
-	Long: `Send an HTTP request using the specified METHOD:
+	rawQueryParams, err := cmd.Flags().GetStringArray("query")
 
-	- METHOD: The HTTP method to use (GET, POST, PUT, DELETE, etc.).
-	- URL: The target URL for the request.
-		
-Optional flags allow you to add query parameters, headers, and a request body.`,
-	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		method, rawURL := args[0], args[1]
-		method = strings.ToUpper(method)
+	if err != nil {
+		return fmt.Errorf("error on parsing query params: %v", err)
+	}
 
-		rawQueryParams, err := cmd.Flags().GetStringArray("query")
+	queryParams, err := parseQueryParams(rawQueryParams)
 
-		if err != nil {
-			log.Fatalf("error on parsing query params: %v", err)
-		}
+	if err != nil {
+		return fmt.Errorf("error on parsing query params: %v", err)
+	}
 
-		queryParams, err := parseQueryParams(rawQueryParams)
+	rawHeaders, err := cmd.Flags().GetStringArray("header")
 
-		if err != nil {
-			log.Fatalf("error on parsing query params: %v", err)
-		}
+	if err != nil {
+		return fmt.Errorf("error on parsing headers: %v", err)
+	}
 
-		rawHeaders, err := cmd.Flags().GetStringArray("header")
+	headers, err := parseHeaders(rawHeaders)
 
-		if err != nil {
-			log.Fatalf("error on parsing headers: %v", err)
-		}
+	if _, ok := headers["Content-Type"]; !ok {
+		headers["Content-Type"] = []string{"application/json"}
+	}
 
-		headers, err := parseHeaders(rawHeaders)
+	if err != nil {
+		return fmt.Errorf("error on parsing header: %v", err)
+	}
 
-		if _, ok := headers["Content-Type"]; !ok {
-			headers["Content-Type"] = []string{"application/json"}
-		}
+	rawRequestBody, err := cmd.Flags().GetString("body")
 
-		if err != nil {
-			log.Fatalf("error on parsing header: %v", err)
-		}
+	if err != nil {
+		return fmt.Errorf("error on parsing request body: %v", err)
+	}
 
-		rawRequestBody, err := cmd.Flags().GetString("body")
+	req := &http.Request{
+		Method:      method,
+		Url:         rawURL,
+		Headers:     headers,
+		QueryParams: queryParams,
+		Body:        []byte(rawRequestBody),
+	}
 
-		if err != nil {
-			log.Fatalf("error on parsing request body: %v", err)
-		}
+	c := http.NewClient(0)
+	res, err := c.Do(req)
 
-		c := http.NewClient(0)
+	if err != nil {
+		return fmt.Errorf("failed to execute http request: %v", err)
+	}
 
-		req := &http.Request{
-			Method:      method,
-			Url:         rawURL,
-			Headers:     headers,
-			QueryParams: queryParams,
-			Body:        []byte(rawRequestBody),
-		}
+	var responseJson bytes.Buffer
+	err = json.Indent(&responseJson, res.Body, "", " ")
+	if err != nil {
+		return fmt.Errorf("failed to parse response: %s", err)
+	}
 
-		res, err := c.Do(req)
-
-		if err != nil {
-			log.Fatalf("sending http request failed: %v", err)
-		}
-
-		var responseJson bytes.Buffer
-		json.Indent(&responseJson, res.Body, "", " ")
-		if err != nil {
-			log.Fatalf("failed to parse response: %s", err)
-		}
-
-		log.Printf("Response:\n%s", responseJson.String())
-	},
+	out.Write([]byte("Response:\n"))
+	out.Write([]byte(responseJson.String()))
+	return nil
 }
 
 func parseQueryParams(rawQueryParams []string) (map[string][]string, error) {
