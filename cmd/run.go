@@ -84,10 +84,6 @@ func parseCommand(cr *config.ConfigRunner, cmd *cobra.Command, args []string) er
 		return fmt.Errorf("invalid value for 'debug': %v", err)
 	}
 
-	if err != nil {
-		return fmt.Errorf("failed to process input: %v", err)
-	}
-
 	// Env setup
 	efv, err := cmd.Flags().GetString("env")
 	if err != nil {
