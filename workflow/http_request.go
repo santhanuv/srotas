@@ -96,11 +96,6 @@ func (r *Request) Execute(context *ExecutionContext) error {
 	context.store.Set("response", resBody.body)
 	defer context.store.Remove("response")
 
-	err = resBody.store(r.Store, context)
-	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
-	}
-
 	err = r.Validations.Validate(context, res.StatusCode, &resBody)
 	if err != nil {
 		fres := struct {
@@ -116,10 +111,14 @@ func (r *Request) Execute(context *ExecutionContext) error {
 			return fmt.Errorf("http request '%s': unable to output response: %v", r.StepName, je)
 		}
 
-		return fmt.Errorf("%v\nresponse: %s", err, string(jres))
+		return fmt.Errorf("http request '%s': %v\nresponse: %s", r.StepName, err, string(jres))
 	}
-
 	context.logger.Debug("http response validation has been completed successfully.")
+
+	err = resBody.store(r.Store, context)
+	if err != nil {
+		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
+	}
 
 	return nil
 }
@@ -205,6 +204,8 @@ type RequestBody struct {
 	Data     map[string]string  // Dynamic fields evaluated and added/updated in Content.
 }
 
+const MainTemplateName = "request"
+
 func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 	var rawRb struct {
 		Template string
@@ -226,7 +227,7 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	if rawRb.Template != "" {
-		tmpl, err := template.New("request").Parse(rawRb.Template)
+		tmpl, err := template.New(MainTemplateName).Parse(rawRb.Template)
 		if err != nil {
 			return fmt.Errorf("request template error: %v", err)
 		}
@@ -237,7 +238,7 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	if rawRb.File != "" {
-		tmpl, err := template.New(rawRb.File).ParseFiles(rawRb.File)
+		tmpl, err := template.New(MainTemplateName).ParseFiles(rawRb.File)
 		if err != nil {
 			return fmt.Errorf("request template error: %v", err)
 		}
@@ -270,7 +271,7 @@ func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 	}
 
 	var buf bytes.Buffer
-	err := rb.Template.Execute(&buf, tvars)
+	err := rb.Template.ExecuteTemplate(&buf, MainTemplateName, tvars)
 	if err != nil {
 		return nil, fmt.Errorf("error executing template: %v", err)
 	}

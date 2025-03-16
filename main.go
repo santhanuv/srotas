@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"os"
 
 	"github.com/santhanuv/srotas/cmd"
@@ -9,7 +8,7 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stderr, io.Discard, os.Stderr)
+	logger := log.New(os.Stderr, os.Stderr, os.Stderr)
 
 	rootCmd := cmd.NewRootCmd(logger, os.Stdin, os.Stdout)
 
