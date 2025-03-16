@@ -6,6 +6,7 @@ weight: 1
 ---
 
 An HTTP step defines an API request with options for dynamic parameters, request body templating, and response validation.  
+
 ```yaml
 type: http
 step:
@@ -28,6 +29,7 @@ step:
       - "response.status == 'online'"
 
 ```
+
 | Field                   | Type                      | Required | Description                                                     |
 |-------------------------|---------------------------|----------|-----------------------------------------------------------------|
 | type                    | string                    | Yes      | Must be `"http"`                                                |
@@ -44,16 +46,17 @@ step:
 | validations.status_code | int                       | No       | Expected HTTP status code                                       |
 | validations.asserts     | list\<expr>               | No       | List of validation expressions                                  |
 
-
 #### URL Parameters
-Use `/:variable` in the URL to specify path parameters. These parameters are replaced with values from stored variables. 
+
+Use `/:variable` in the URL to specify path parameters. These parameters are replaced with values from stored variables.
 
 For example, if userId is a variable with the value 123, the following URL:
+
 ```yaml
 url: "/users/:userId"
 ```
-Will be transformed into: `/users/123`
 
+Will be transformed into: `/users/123`
 
 > [!WARNING]
 > `expr` expressions are not allowed in URL parameters.
@@ -62,10 +65,13 @@ Will be transformed into: `/users/123`
 > The variable used in the parameter must already be defined; otherwise, an error will be raised.
 
 #### Headers
+
 Defined as a map where the key is the header name and the value is a list of `expr` expression that evaluate to a string. All variables can be used in these expressions. Step headers are prioritized over global headers if a header with the same name exists.
 
 #### Body
+
 The request body can be defined using either a file or an inline template. If both are provided, the template takes precedence.
+
 ##### Body Fields
 
 - `data`:  
@@ -81,21 +87,22 @@ Inline request body template. If provided, this is used instead of the file.
 > The template for the `body` field should follow the Go text/template format.
 
 #### Store
+
 A map where the key is the variable name, and the value is an `expr` expression. The `response` variable holds the HTTP response body and can be used only within the same HTTP step.
 
 #### Validations
-  - `status_code` specifies the expected HTTP status code.  
-  - `asserts` is a list of `expr` expressions that validate the response body. These expressions have access to all variables and the `response` variable and must return a boolean value.
+
+- `status_code` specifies the expected HTTP status code.  
+- `asserts` is a list of `expr` expressions that validate the response body. These expressions have access to all variables and the `response` variable and must return a boolean value.
 
 > [!NOTE]
 > `store` captures response data after the request completes.  
 
 ### HTTP Request Template
 
-When it comes to defining the HTTP request body, Srotas uses Go’s built-in `text/template` syntax. This lets you create a template that mixes static JSON with dynamic data. You can define inline templates or reference external files, and you have full control over how the final JSON is generated.
+When it comes to defining the HTTP request body, Srotas uses Go’s built-in `text/template` syntax. This lets you create a template that mixes static JSON with dynamic data. You can define inline templates or reference external files, and you have full control over how the final JSON is generated. When specifying the request template in a file, ensure that the main template is defined using {{define "request"}} ... {{end}}. This template is used as the HTTP request body.
 
-
-**Learning Go Template Syntax**   
+**Learning Go Template Syntax**
 
 If you're new to Go templates, follow these resources in order to get familiar with the syntax:  
 
@@ -104,4 +111,3 @@ If you're new to Go templates, follow these resources in order to get familiar w
 3. [Official Go text/template Documentation](https://pkg.go.dev/text/template) – The full reference for Go's templating engine.  
 
 By following these, you'll quickly get up to speed with writing templates for Srotas.  
-

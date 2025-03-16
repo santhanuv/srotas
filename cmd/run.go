@@ -25,6 +25,11 @@ func newRunCommand(logger *log.Logger, in *os.File, out io.Writer, cr *config.Co
 				return err
 			}
 
+			logger.SetDebugMode(cr.Debug)
+
+			cmd.SilenceUsage = true
+			cmd.SilenceErrors = true
+
 			if err := cr.Run(logger, in, out); err != nil {
 				return err
 			}
@@ -70,7 +75,7 @@ func parseCommand(cr *config.ConfigRunner, cmd *cobra.Command, args []string) er
 	// Config setup
 	configPath := args[0]
 	if configPath == "" {
-		return fmt.Errorf("config file is required. Please provide a valid YAML config file. Use --help for more information.")
+		return fmt.Errorf("config file is required. Please provide a valid YAML config file. Use --help for more information")
 	}
 
 	configPath, err := filepath.Abs(configPath)
@@ -163,13 +168,11 @@ func extractEnvFromString(source string) (map[string]string, map[string][]string
 	}
 
 	data, err := os.ReadFile(source)
-
 	if err != nil {
 		return nil, nil, err
 	}
 
 	err = json.Unmarshal(data, &rawEnv)
-
 	if err != nil {
 		return nil, nil, err
 	}
