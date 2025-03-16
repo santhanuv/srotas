@@ -8,15 +8,15 @@ import (
 
 // Validator is a data structure that represents the validations for the HTTP response..
 type Validator struct {
-	Status_code *uint    // Expected status code for the http response.
+	Status_code uint     // Expected status code for the http response.
 	Asserts     []Assert // Assert expr expressions on the response body.
 }
 
 // Validate validates the http response.
 // Returns an error if the validation is falied.
 func (v *Validator) Validate(context *ExecutionContext, statusCode uint, rb *responseBody) error {
-	if v.Status_code != nil && *v.Status_code != statusCode {
-		return fmt.Errorf("status code: expected '%d' but got '%d'", *v.Status_code, statusCode)
+	if v.Status_code != 0 && v.Status_code != statusCode {
+		return fmt.Errorf("status code: expected '%d' but got '%d'", v.Status_code, statusCode)
 	}
 
 	vars := context.store.Map()
@@ -24,7 +24,6 @@ func (v *Validator) Validate(context *ExecutionContext, statusCode uint, rb *res
 
 	for _, assert := range v.Asserts {
 		err := assert.Validate(vars, rb)
-
 		if err != nil {
 			return err
 		}
@@ -40,7 +39,6 @@ type Assert string
 // Validate runs the assertion expr expressions with the response and variables as the environment.
 func (a *Assert) Validate(vars map[string]any, rb *responseBody) error {
 	val, err := expr.Eval(string(*a), vars)
-
 	if err != nil {
 		return fmt.Errorf("invalid expression '%s' for assert: %v", *a, err)
 	}

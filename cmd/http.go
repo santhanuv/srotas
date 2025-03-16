@@ -12,8 +12,7 @@ import (
 )
 
 func newHttpCommand(out io.Writer) *cobra.Command {
-	var httpCommand = cobra.Command{
-
+	httpCommand := cobra.Command{
 		Use:   "http [METHOD] [URL]",
 		Short: "Send an HTTP request to a specified URL.",
 		Long: `
@@ -50,19 +49,16 @@ func run(cmd *cobra.Command, args []string, out io.Writer) error {
 	method = strings.ToUpper(method)
 
 	rawQueryParams, err := cmd.Flags().GetStringArray("query")
-
 	if err != nil {
 		return fmt.Errorf("error on parsing query params: %v", err)
 	}
 
 	queryParams, err := parseQueryParams(rawQueryParams)
-
 	if err != nil {
 		return fmt.Errorf("error on parsing query params: %v", err)
 	}
 
 	rawHeaders, err := cmd.Flags().GetStringArray("header")
-
 	if err != nil {
 		return fmt.Errorf("error on parsing headers: %v", err)
 	}
@@ -78,7 +74,6 @@ func run(cmd *cobra.Command, args []string, out io.Writer) error {
 	}
 
 	rawRequestBody, err := cmd.Flags().GetString("body")
-
 	if err != nil {
 		return fmt.Errorf("error on parsing request body: %v", err)
 	}
@@ -93,7 +88,6 @@ func run(cmd *cobra.Command, args []string, out io.Writer) error {
 
 	c := http.NewClient(0)
 	res, err := c.Do(req)
-
 	if err != nil {
 		return fmt.Errorf("failed to execute http request: %v", err)
 	}

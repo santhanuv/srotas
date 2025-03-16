@@ -74,34 +74,34 @@ func (r *Request) Execute(context *ExecutionContext) error {
 
 	res, err := context.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
+		return fmt.Errorf("failed executing http request '%s': %w", r.StepName, err)
 	}
 
 	context.logger.Info("http request '%s' responded with status %d", r.StepName, res.StatusCode)
 	context.logger.DebugJson(res.Body, "http response: ")
 
 	var pb any
-	err = json.Unmarshal(res.Body, &pb)
+
+	if res.Body != nil {
+		err = json.Unmarshal(res.Body, &pb)
+		if err != nil {
+			return fmt.Errorf("failed to parse response body for Http request %q: %v", r.StepName, err)
+		}
+	}
 
 	resBody := responseBody{
 		body: pb,
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
 	context.store.Set("response", resBody.body)
 	defer context.store.Remove("response")
 
 	err = resBody.store(r.Store, context)
-
 	if err != nil {
 		return fmt.Errorf("failed executing http request '%s': %v", r.StepName, err)
 	}
 
 	err = r.Validations.Validate(context, res.StatusCode, &resBody)
-
 	if err != nil {
 		fres := struct {
 			StatusCode uint
@@ -141,7 +141,6 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 
 	if r.Body != nil {
 		body, err := r.Body.build(context)
-
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +149,6 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 	}
 
 	headers, err := r.Headers.compile(context)
-
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +156,6 @@ func (r *Request) build(context *ExecutionContext) (*http.Request, error) {
 	req.Headers = headers
 
 	queryParams, err := r.QueryParams.compile(context)
-
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +185,7 @@ func (r *Request) buildURL(baseUrl string, context *ExecutionContext) (string, e
 		r.Url = strings.ReplaceAll(r.Url, fmt.Sprintf(":%s", urlParam), fmt.Sprintf("%v", val))
 	}
 
-	var abURL = r.Url
+	abURL := r.Url
 
 	if !strings.Contains(r.Url, "://") {
 		baseUrl = strings.TrimSuffix(baseUrl, "/")
@@ -230,7 +227,6 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 
 	if rawRb.Template != "" {
 		tmpl, err := template.New("request").Parse(rawRb.Template)
-
 		if err != nil {
 			return fmt.Errorf("request template error: %v", err)
 		}
@@ -242,7 +238,6 @@ func (rb *RequestBody) UnmarshalYAML(value *yaml.Node) error {
 
 	if rawRb.File != "" {
 		tmpl, err := template.New(rawRb.File).ParseFiles(rawRb.File)
-
 		if err != nil {
 			return fmt.Errorf("request template error: %v", err)
 		}
@@ -267,7 +262,6 @@ func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 
 	for v, e := range rb.Data {
 		val, err := expr.Eval(e, vars)
-
 		if err != nil {
 			return nil, fmt.Errorf("expression '%s' cannot be evaluated for variable '%s': %v", e, v, err)
 		}
@@ -277,7 +271,6 @@ func (rb *RequestBody) build(context *ExecutionContext) ([]byte, error) {
 
 	var buf bytes.Buffer
 	err := rb.Template.Execute(&buf, tvars)
-
 	if err != nil {
 		return nil, fmt.Errorf("error executing template: %v", err)
 	}

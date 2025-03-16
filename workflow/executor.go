@@ -11,10 +11,14 @@ import (
 // ExecutionContext holds contextual data for the execution of a config.
 // It manages execution-specific state, including variables, headers, and other necessary metadata.
 type ExecutionContext struct {
-	httpClient    *http.Client   // Client used for the execution of http request.
+	httpClient    HttpClient     // Client used for the execution of http request.
 	store         *store.Store   // Store used in the config execution.
 	globalOptions *ConfigOptions // Global options for config execution.
 	logger        *log.Logger    // Logger used in the config execution.
+}
+
+type HttpClient interface {
+	Do(*http.Request) (*http.Response, error)
 }
 
 // ConfigOptions defines execution settings for the configuration,
@@ -33,7 +37,6 @@ func NewExecutionContext(options ...ExecutionOption) (*ExecutionContext, error) 
 
 	for _, option := range options {
 		err := option(&context)
-
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +64,6 @@ func Execute(definition *Definition, context *ExecutionContext) error {
 
 	for _, step := range steps {
 		err := step.Execute(context)
-
 		if err != nil {
 			return err
 		}
@@ -85,7 +87,7 @@ func WithGlobalOptions(baseUrl string, headers map[string][]string) ExecutionOpt
 }
 
 // WithHttpClient configures the [ExecutionContext] with the specified client.
-func WithHttpClient(client *http.Client) ExecutionOption {
+func WithHttpClient(client HttpClient) ExecutionOption {
 	return func(context *ExecutionContext) error {
 		context.httpClient = client
 
