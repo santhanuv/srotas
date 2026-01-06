@@ -80,7 +80,7 @@ srotas run --env env.json config.yaml
 ```
 
 > [!IMPORTANT]
-> At least one of `Variables` or `Headers` must be present in the JSON.
+> At least one of `Variables` or `Headers` must be present in JSON.
 
 > [!WARNING]
 > Duplicate variable and header names will result in an error.
